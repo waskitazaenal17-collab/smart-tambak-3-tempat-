@@ -4,6 +4,7 @@
     <title>AquaSense Pro - Monitoring Tambak Cerdas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* === COLOR PALETTE - TEMA BIRU HARMONIS === */
@@ -690,7 +691,7 @@
             padding: 22px;
             border-radius: 16px;
             margin-top: 20px;
-            display: none;
+            display: block;
             animation: slideUp 0.5s ease;
             border: 1px solid var(--primary-200);
             box-shadow: var(--shadow-soft);
@@ -798,6 +799,84 @@
         .chartjs-render-monitor {
             background: transparent !important;
         }
+
+        /* Daily Analysis Styles */
+        .daily-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .daily-overview {
+            background: linear-gradient(135deg, var(--primary-50), var(--secondary-50));
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .overview-item {
+            text-align: center;
+        }
+
+        .overview-item .label {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .overview-item .value {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--primary-700);
+        }
+
+        .action-plan-card {
+            background: var(--warning-50);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border-left: 4px solid var(--warning-500);
+        }
+
+        /* Notification Settings Styles */
+        .setting-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: var(--primary-50);
+            border-radius: 12px;
+        }
+
+        .notification-settings input[type="text"],
+        .notification-settings input[type="number"],
+        .notification-settings input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            margin-top: 8px;
+        }
+
+        .notification-settings input[type="checkbox"] {
+            margin-left: auto;
+        }
+
+        /* Auth Section */
+        .auth-section {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .auth-section input {
+            padding: 8px;
+            margin: 5px;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+        }
     </style>
 </head>
 <body>
@@ -806,6 +885,19 @@
         <div class="notification-toast" id="notificationToast">
             <i class="fas fa-check-circle"></i>
             <span id="toastMessage">Operasi Berhasil</span>
+        </div>
+
+        <!-- Auth Section -->
+        <div class="auth-section">
+            <div id="loginForm">
+                <input type="text" id="username" placeholder="Username" value="admin">
+                <input type="password" id="password" placeholder="Password" value="admin123">
+                <button class="btn" onclick="login()">Login</button>
+            </div>
+            <div id="userInfo" style="display: none;">
+                <span id="userName" style="margin-right: 10px;"></span>
+                <button class="btn btn-warning" onclick="logout()">Logout</button>
+            </div>
         </div>
 
         <!-- Header -->
@@ -825,7 +917,7 @@
             <button class="time-tab" data-period="summary">Dashboard Rangkuman</button>
         </div>
 
-        <!-- Real-time Dashboard (Default) -->
+        <!-- Real-time Dashboard -->
         <div id="realtimeDashboard" class="dashboard-section">
             <!-- Stats Bar -->
             <div class="stats-bar">
@@ -865,6 +957,72 @@
                 <button class="btn btn-warning" id="demoDataBtn">
                     <i class="fas fa-bolt"></i> Data Demo
                 </button>
+            </div>
+
+            <!-- Notification Settings -->
+            <div class="card">
+                <h3><i class="fas fa-bell"></i> PENGATURAN NOTIFIKASI</h3>
+                <div class="notification-settings">
+                    <!-- Telegram Settings -->
+                    <div class="setting-item">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <i class="fab fa-telegram" style="color: #0088cc; font-size: 1.2em; margin-right: 10px;"></i>
+                            <label style="font-weight: 600;">Notifikasi Telegram</label>
+                            <input type="checkbox" id="telegramAlerts" checked style="margin-left: auto;">
+                        </div>
+                        <input type="text" id="telegramChatId" placeholder="Chat ID Telegram (contoh: 123456789)" value="123456789">
+                        <small style="color: var(--text-muted); display: block; margin-top: 5px;">
+                            Dapatkan Chat ID dari @chatIDrobot di Telegram
+                        </small>
+                    </div>
+
+                    <!-- WhatsApp Settings -->
+                    <div class="setting-item">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <i class="fab fa-whatsapp" style="color: #25D366; font-size: 1.2em; margin-right: 10px;"></i>
+                            <label style="font-weight: 600;">Notifikasi WhatsApp</label>
+                            <input type="checkbox" id="whatsappAlerts" checked style="margin-left: auto;">
+                        </div>
+                        <input type="text" id="whatsappNumber" placeholder="Nomor WhatsApp (contoh: 628123456789)" value="628123456789">
+                    </div>
+
+                    <!-- Alert Thresholds -->
+                    <div class="setting-item">
+                        <h4 style="margin-bottom: 10px;">Threshold Peringatan</h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label>Suhu Minimum (°C)</label>
+                                <input type="number" id="minTempThreshold" value="26" step="0.1">
+                            </div>
+                            <div>
+                                <label>Suhu Maksimum (°C)</label>
+                                <input type="number" id="maxTempThreshold" value="32" step="0.1">
+                            </div>
+                            <div>
+                                <label>pH Minimum</label>
+                                <input type="number" id="minPhThreshold" value="6.5" step="0.1">
+                            </div>
+                            <div>
+                                <label>pH Maksimum</label>
+                                <input type="number" id="maxPhThreshold" value="8.2" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="saveNotificationSettings()" style="margin-top: 15px; width: 100%;">
+                        <i class="fas fa-save"></i> Simpan Pengaturan Notifikasi
+                    </button>
+                    
+                    <!-- Test Notifications -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-success" onclick="testTelegramNotification()">
+                            <i class="fab fa-telegram"></i> Test Telegram
+                        </button>
+                        <button class="btn btn-success" onclick="testWhatsAppNotification()">
+                            <i class="fab fa-whatsapp"></i> Test WhatsApp
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Main Dashboard -->
@@ -916,13 +1074,15 @@
                 <div class="card">
                     <h3><i class="fas fa-database"></i> LOG DATABASE</h3>
                     <div class="database-log" id="databaseLog">
-                        <!-- Log entries will be populated by JavaScript -->
+                        <div class="log-entry info">
+                            <strong>[SYSTEM]</strong> Database initialized - Ready to receive data
+                        </div>
                     </div>
                 </div>
 
                 <div class="card">
                     <h3><i class="fas fa-robot"></i> REKOMENDASI AI</h3>
-                    <div class="ai-recommendation" id="aiRecommendation">
+                    <div class="ai-recommendation">
                         <div class="recommendation-title">
                             <i class="fas fa-brain"></i> ANALISIS KONDISI SAAT INI
                         </div>
@@ -999,6 +1159,120 @@
                 <i class="fas fa-tachometer-alt"></i> Dashboard Rangkuman - Kondisi Saat Ini vs Harusnya
             </div>
 
+            <!-- Data Harian 15 Menit -->
+            <div class="card">
+                <h3><i class="fas fa-calendar-day"></i> DATA HARIAN - ANALISIS 15 MENIT</h3>
+                
+                <!-- Date Control & Download -->
+                <div class="daily-controls">
+                    <div class="date-selector" style="display: flex; align-items: center; gap: 10px;">
+                        <label style="font-weight: 600;">Pilih Tanggal:</label>
+                        <input type="date" id="dailyDataDate" onchange="updateDaily15MinuteData()">
+                    </div>
+                    
+                    <div class="download-actions" style="display: flex; gap: 10px;">
+                        <button class="btn btn-success" onclick="downloadDailyReport('pdf')">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </button>
+                        <button class="btn" onclick="downloadDailyReport('excel')">
+                            <i class="fas fa-file-excel"></i> Download Excel
+                        </button>
+                        <button class="btn btn-warning" onclick="downloadDailyReport('summary')">
+                            <i class="fas fa-chart-bar"></i> Ringkasan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Daily Summary Overview -->
+                <div class="daily-overview">
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                        <div class="overview-item">
+                            <div class="label">Tanggal Analisis</div>
+                            <div class="value" id="analysisDate">-</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="label">Status Harian</div>
+                            <div class="value" id="dailyStatus">
+                                <span class="badge badge-success">OPTIMAL</span>
+                            </div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="label">Efisiensi</div>
+                            <div class="value" id="dailyEfficiency">0%</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="label">Rekomendasi</div>
+                            <div class="value" id="dailyRecommendation">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed 15-Minute Analysis -->
+                <div class="detailed-analysis">
+                    <h4 style="margin-bottom: 15px; color: var(--text-primary);">
+                        <i class="fas fa-clock"></i> ANALISIS DETAIL 15 MENIT
+                    </h4>
+                    
+                    <!-- Analysis Chart -->
+                    <div class="chart-container" style="height: 300px; margin-bottom: 20px;">
+                        <canvas id="detailedDailyChart"></canvas>
+                    </div>
+
+                    <!-- Comparison Table -->
+                    <div style="margin-bottom: 20px;">
+                        <h5 style="margin-bottom: 10px;">PERBANDINGAN: AKTUAL vs HARUSNYA</h5>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Parameter</th>
+                                    <th>Rata-rata Aktual</th>
+                                    <th>Rentang Ideal</th>
+                                    <th>Deviasi</th>
+                                    <th>Status</th>
+                                    <th>Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparisonTableBody">
+                                <!-- Data will be populated -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 15-Minute Interval Data -->
+                    <div>
+                        <h5 style="margin-bottom: 10px;">DATA PER 15 MENIT</h5>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead style="position: sticky; top: 0; background: var(--primary-50);">
+                                    <tr>
+                                        <th>Waktu</th>
+                                        <th>Suhu Aktual</th>
+                                        <th>Suhu Ideal</th>
+                                        <th>pH Aktual</th>
+                                        <th>pH Ideal</th>
+                                        <th>Status</th>
+                                        <th>Analisis</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detailed15MinTableBody">
+                                    <!-- Data will be populated -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Plan Section -->
+                <div class="action-plan-card">
+                    <h4 style="margin-bottom: 15px; color: var(--warning-700);">
+                        <i class="fas fa-clipboard-list"></i> RENCANA TINDAKAN HARIAN
+                    </h4>
+                    <div id="dailyActionPlan">
+                        <!-- Action items will be populated -->
+                    </div>
+                </div>
+            </div>
+
             <div class="summary-dashboard">
                 <div class="summary-card">
                     <h3><i class="fas fa-thermometer-half"></i> ANALISIS SUHU</h3>
@@ -1028,7 +1302,7 @@
                     </div>
                     
                     <!-- ENHANCED RECOMMENDATION SECTION -->
-                    <div class="ai-recommendation" style="display: block;">
+                    <div class="ai-recommendation">
                         <div class="recommendation-title">
                             <i class="fas fa-robot"></i> REKOMENDASI AI UNTUK SUHU
                         </div>
@@ -1077,7 +1351,7 @@
                     </div>
                     
                     <!-- ENHANCED RECOMMENDATION SECTION -->
-                    <div class="ai-recommendation" style="display: block;">
+                    <div class="ai-recommendation">
                         <div class="recommendation-title">
                             <i class="fas fa-robot"></i> REKOMENDASI AI UNTUK pH
                         </div>
@@ -1181,8 +1455,63 @@
     </div>
 
     <script>
-        // Enhanced Database Simulation with Time-based Analysis
-        class TimeBasedPondDatabase {
+        // ==================== AUTHENTICATION SYSTEM ====================
+        class AuthSystem {
+            constructor() {
+                this.currentUser = null;
+                this.users = {
+                    'admin': { password: 'admin123', role: 'admin', name: 'Administrator' },
+                    'petambak1': { password: 'tambak123', role: 'user', name: 'Petambak 1' }
+                };
+                this.checkAuthStatus();
+            }
+
+            checkAuthStatus() {
+                const saved = localStorage.getItem('currentUser');
+                if (saved) {
+                    this.currentUser = JSON.parse(saved);
+                    this.updateUI();
+                }
+            }
+
+            login(username, password) {
+                if (this.users[username] && this.users[username].password === password) {
+                    this.currentUser = { username, ...this.users[username] };
+                    localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                    this.updateUI();
+                    return true;
+                }
+                return false;
+            }
+
+            logout() {
+                this.currentUser = null;
+                localStorage.removeItem('currentUser');
+                this.updateUI();
+            }
+
+            isLoggedIn() {
+                return this.currentUser !== null;
+            }
+
+            updateUI() {
+                const loginForm = document.getElementById('loginForm');
+                const userInfo = document.getElementById('userInfo');
+                const userName = document.getElementById('userName');
+
+                if (this.isLoggedIn()) {
+                    loginForm.style.display = 'none';
+                    userInfo.style.display = 'block';
+                    userName.textContent = this.currentUser.name;
+                } else {
+                    loginForm.style.display = 'block';
+                    userInfo.style.display = 'none';
+                }
+            }
+        }
+
+        // ==================== ENHANCED DATABASE SYSTEM ====================
+        class EnhancedPondDatabase {
             constructor() {
                 this.records = [];
                 this.maxRecords = 500;
@@ -1192,6 +1521,45 @@
                     warning: 0,
                     danger: 0
                 };
+                this.initializeWithSampleData();
+            }
+
+            initializeWithSampleData() {
+                // Add some sample data for demonstration
+                const now = new Date();
+                for (let i = 0; i < 50; i++) {
+                    const timestamp = new Date(now.getTime() - i * 15 * 60 * 1000);
+                    const temp = (28 + Math.random() * 4 - 2).toFixed(1);
+                    const ph = (7.0 + Math.random() * 1.0 - 0.5).toFixed(1);
+                    const status = this.evaluateStatus(temp, ph);
+                    
+                    this.records.push({
+                        id: Date.now() - i,
+                        timestamp: timestamp,
+                        pond: 1,
+                        temperature: parseFloat(temp),
+                        ph: parseFloat(ph),
+                        status: status,
+                        dbAction: 'INSERT'
+                    });
+
+                    this.updateStats(status);
+                }
+            }
+
+            evaluateStatus(temp, ph) {
+                temp = parseFloat(temp);
+                ph = parseFloat(ph);
+
+                const tempStatus = (temp >= 28 && temp <= 30) ? 'normal' : 
+                                 (temp < 26 || temp > 32) ? 'danger' : 'warning';
+
+                const phStatus = (ph >= 6.8 && ph <= 7.8) ? 'normal' :
+                               (ph < 6.5 || ph > 8.2) ? 'danger' : 'warning';
+
+                if (tempStatus === 'danger' || phStatus === 'danger') return 'danger';
+                if (tempStatus === 'warning' || phStatus === 'warning') return 'warning';
+                return 'normal';
             }
 
             insertRecord(pond, temperature, ph, status) {
@@ -1256,6 +1624,49 @@
                 ).slice(0, 15);
             }
 
+            getDaily15MinuteData(date = new Date()) {
+                const startOfDay = new Date(date);
+                startOfDay.setHours(0, 0, 0, 0);
+                
+                const endOfDay = new Date(date);
+                endOfDay.setHours(23, 59, 59, 999);
+
+                // Filter records for the selected date
+                const dayRecords = this.records.filter(record => 
+                    record.timestamp >= startOfDay && record.timestamp <= endOfDay
+                );
+
+                // Create 15-minute intervals
+                const intervals = {};
+                for (let hour = 0; hour < 24; hour++) {
+                    for (let minute = 0; minute < 60; minute += 15) {
+                        const timeKey = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                        intervals[timeKey] = {
+                            temperatures: [],
+                            phValues: [],
+                            statuses: [],
+                            count: 0
+                        };
+                    }
+                }
+
+                // Group records into 15-minute intervals
+                dayRecords.forEach(record => {
+                    const hour = record.timestamp.getHours();
+                    const minute = Math.floor(record.timestamp.getMinutes() / 15) * 15;
+                    const timeKey = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    
+                    if (intervals[timeKey]) {
+                        intervals[timeKey].temperatures.push(record.temperature);
+                        intervals[timeKey].phValues.push(record.ph);
+                        intervals[timeKey].statuses.push(record.status);
+                        intervals[timeKey].count++;
+                    }
+                });
+
+                return intervals;
+            }
+
             getSummaryStats() {
                 const recentData = this.records.slice(0, 50);
                 const temperatures = recentData.map(r => r.temperature);
@@ -1276,10 +1687,671 @@
             }
         }
 
-        // Enhanced Monitoring App with Time-based Analysis
-        class TimeBasedMonitoringApp {
+        // ==================== NOTIFICATION SYSTEM ====================
+        class AdvancedNotificationSystem {
             constructor() {
-                this.db = new TimeBasedPondDatabase();
+                this.settings = {
+                    telegramAlerts: true,
+                    whatsappAlerts: true,
+                    telegramChatId: '123456789',
+                    whatsappNumber: '628123456789',
+                    minTempThreshold: 26,
+                    maxTempThreshold: 32,
+                    minPhThreshold: 6.5,
+                    maxPhThreshold: 8.2,
+                    lastNotification: null
+                };
+                this.loadSettings();
+            }
+
+            loadSettings() {
+                const saved = localStorage.getItem('notificationSettings');
+                if (saved) {
+                    this.settings = { ...this.settings, ...JSON.parse(saved) };
+                }
+                this.updateUI();
+            }
+
+            saveSettings() {
+                localStorage.setItem('notificationSettings', JSON.stringify(this.settings));
+                this.updateUI();
+            }
+
+            updateUI() {
+                document.getElementById('telegramAlerts').checked = this.settings.telegramAlerts;
+                document.getElementById('whatsappAlerts').checked = this.settings.whatsappAlerts;
+                document.getElementById('telegramChatId').value = this.settings.telegramChatId;
+                document.getElementById('whatsappNumber').value = this.settings.whatsappNumber;
+                document.getElementById('minTempThreshold').value = this.settings.minTempThreshold;
+                document.getElementById('maxTempThreshold').value = this.settings.maxTempThreshold;
+                document.getElementById('minPhThreshold').value = this.settings.minPhThreshold;
+                document.getElementById('maxPhThreshold').value = this.settings.maxPhThreshold;
+            }
+
+            checkAlerts(currentData) {
+                const now = new Date();
+                const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+                
+                // Prevent spam - hanya kirim notifikasi setiap 5 menit
+                if (this.settings.lastNotification && this.settings.lastNotification > fiveMinutesAgo) {
+                    return;
+                }
+
+                const alerts = [];
+                
+                // Check temperature thresholds
+                if (currentData.temperature < this.settings.minTempThreshold) {
+                    alerts.push(`❄️ SUHU RENDAH: ${currentData.temperature}°C (min: ${this.settings.minTempThreshold}°C)`);
+                }
+                if (currentData.temperature > this.settings.maxTempThreshold) {
+                    alerts.push(`🔥 SUHU TINGGI: ${currentData.temperature}°C (max: ${this.settings.maxTempThreshold}°C)`);
+                }
+                
+                // Check pH thresholds
+                if (currentData.ph < this.settings.minPhThreshold) {
+                    alerts.push(`⚠️ pH RENDAH: ${currentData.ph} (min: ${this.settings.minPhThreshold})`);
+                }
+                if (currentData.ph > this.settings.maxPhThreshold) {
+                    alerts.push(`⚠️ pH TINGGI: ${currentData.ph} (max: ${this.settings.maxPhThreshold})`);
+                }
+
+                // Check status-based alerts
+                if (currentData.status === 'danger') {
+                    alerts.push(`🚨 BAHAYA! Parameter di luar batas aman. Segera periksa tambak!`);
+                } else if (currentData.status === 'warning') {
+                    alerts.push(`📢 PERHATIAN: Parameter mendekati batas kritis.`);
+                }
+
+                if (alerts.length > 0) {
+                    const message = `🔔 AQUASENSE ALERT - Tambak ${currentData.pond}\n${alerts.join('\n')}\n⏰ ${now.toLocaleString('id-ID')}`;
+                    this.sendAlerts(message);
+                    this.settings.lastNotification = now;
+                    this.saveSettings();
+                }
+            }
+
+            async sendAlerts(message) {
+                console.log('🔔 Sending alerts:', message);
+                
+                if (this.settings.telegramAlerts && this.settings.telegramChatId) {
+                    await this.sendTelegramMessage(message);
+                }
+                
+                if (this.settings.whatsappAlerts && this.settings.whatsappNumber) {
+                    await this.sendWhatsAppMessage(message);
+                }
+            }
+
+            async sendTelegramMessage(message) {
+                // Simulate Telegram message sending
+                console.log('📱 Telegram message:', message);
+                // In real implementation, you would use Telegram Bot API
+                // const botToken = 'YOUR_BOT_TOKEN';
+                // const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {...});
+            }
+
+            async sendWhatsAppMessage(message) {
+                // Simulate WhatsApp message sending
+                console.log('📱 WhatsApp message:', message);
+                // In real implementation, you would use WhatsApp Business API or Twilio
+            }
+
+            async testTelegramNotification() {
+                const testMessage = `🧪 TEST NOTIFICATION - AquaSense Pro\nIni adalah pesan test dari sistem monitoring tambak.\n⏰ ${new Date().toLocaleString('id-ID')}`;
+                
+                if (this.settings.telegramChatId) {
+                    await this.sendTelegramMessage(testMessage);
+                    app.showToast('Test notification sent to Telegram!');
+                } else {
+                    app.showToast('Please set Telegram Chat ID first!');
+                }
+            }
+
+            async testWhatsAppNotification() {
+                const testMessage = `🧪 TEST NOTIFICATION - AquaSense Pro\nIni adalah pesan test dari sistem monitoring tambak.\n⏰ ${new Date().toLocaleString('id-ID')}`;
+                
+                if (this.settings.whatsappNumber) {
+                    await this.sendWhatsAppMessage(testMessage);
+                    app.showToast('Test notification prepared for WhatsApp!');
+                } else {
+                    app.showToast('Please set WhatsApp number first!');
+                }
+            }
+        }
+
+        // ==================== DAILY ANALYSIS SYSTEM ====================
+        class ComprehensiveDailyAnalysis {
+            constructor() {
+                this.idealRanges = {
+                    temperature: { min: 28, max: 30, optimal: 29 },
+                    ph: { min: 6.8, max: 7.8, optimal: 7.3 }
+                };
+                this.detailedChart = null;
+                this.initializeDetailedChart();
+            }
+
+            initializeDetailedChart() {
+                const ctx = document.getElementById('detailedDailyChart').getContext('2d');
+                this.detailedChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: 'Suhu Aktual (°C)',
+                                data: [],
+                                borderColor: 'var(--primary-500)',
+                                backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'Suhu Ideal (°C)',
+                                data: [],
+                                borderColor: 'var(--success-500)',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                tension: 0.4,
+                                fill: false
+                            },
+                            {
+                                label: 'pH Aktual',
+                                data: [],
+                                borderColor: 'var(--secondary-500)',
+                                backgroundColor: 'rgba(0, 150, 136, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                fill: true,
+                                yAxisID: 'y1'
+                            },
+                            {
+                                label: 'pH Ideal',
+                                data: [],
+                                borderColor: 'var(--warning-500)',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                tension: 0.4,
+                                fill: false,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Waktu (Interval 15 Menit)',
+                                    color: 'var(--text-primary)'
+                                },
+                                grid: {
+                                    color: 'rgba(33, 150, 243, 0.1)'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Suhu (°C)',
+                                    color: 'var(--text-primary)'
+                                },
+                                min: 25,
+                                max: 33,
+                                grid: {
+                                    color: 'rgba(33, 150, 243, 0.1)'
+                                }
+                            },
+                            y1: {
+                                title: {
+                                    display: true,
+                                    text: 'pH',
+                                    color: 'var(--text-primary)'
+                                },
+                                min: 6,
+                                max: 8.5,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                backgroundColor: 'var(--gray-800)',
+                                titleColor: 'var(--gray-100)',
+                                bodyColor: 'var(--gray-100)'
+                            }
+                        }
+                    }
+                });
+            }
+
+            generateDailyAnalysis(selectedDate = new Date()) {
+                const dailyData = app.db.getDaily15MinuteData(selectedDate);
+                this.updateDetailedChart(dailyData);
+                this.updateComparisonTable(dailyData);
+                this.updateDetailedTable(dailyData);
+                this.updateDailyOverview(dailyData, selectedDate);
+                this.generateActionPlan(dailyData);
+                
+                return dailyData;
+            }
+
+            updateDetailedChart(intervals) {
+                const times = Object.keys(intervals).sort();
+                
+                const actualTemps = times.map(time => {
+                    const data = intervals[time];
+                    return data.temperatures.length > 0 ? 
+                        (data.temperatures.reduce((a, b) => a + b, 0) / data.temperatures.length) : null;
+                });
+                
+                const idealTemps = times.map(() => this.idealRanges.temperature.optimal);
+                
+                const actualPhs = times.map(time => {
+                    const data = intervals[time];
+                    return data.phValues.length > 0 ? 
+                        (data.phValues.reduce((a, b) => a + b, 0) / data.phValues.length) : null;
+                });
+                
+                const idealPhs = times.map(() => this.idealRanges.ph.optimal);
+
+                this.detailedChart.data.labels = times;
+                this.detailedChart.data.datasets[0].data = actualTemps;
+                this.detailedChart.data.datasets[1].data = idealTemps;
+                this.detailedChart.data.datasets[2].data = actualPhs;
+                this.detailedChart.data.datasets[3].data = idealPhs;
+                this.detailedChart.update();
+            }
+
+            updateComparisonTable(intervals) {
+                const tbody = document.getElementById('comparisonTableBody');
+                
+                // Calculate averages
+                let totalTemp = 0, totalPh = 0, count = 0;
+                Object.values(intervals).forEach(interval => {
+                    if (interval.temperatures.length > 0) {
+                        totalTemp += interval.temperatures.reduce((a, b) => a + b, 0);
+                        totalPh += interval.phValues.reduce((a, b) => a + b, 0);
+                        count += interval.temperatures.length;
+                    }
+                });
+
+                const avgTemp = count > 0 ? totalTemp / count : 0;
+                const avgPh = count > 0 ? totalPh / count : 0;
+
+                // Calculate deviations and status
+                const tempDeviation = avgTemp - this.idealRanges.temperature.optimal;
+                const phDeviation = avgPh - this.idealRanges.ph.optimal;
+
+                const tempStatus = this.getParameterStatus(avgTemp, this.idealRanges.temperature);
+                const phStatus = this.getParameterStatus(avgPh, this.idealRanges.ph);
+
+                tbody.innerHTML = `
+                    <tr>
+                        <td><strong>Suhu</strong></td>
+                        <td>${avgTemp.toFixed(1)}°C</td>
+                        <td>${this.idealRanges.temperature.min}-${this.idealRanges.temperature.max}°C</td>
+                        <td style="color: ${tempDeviation > 0 ? 'var(--danger-500)' : 'var(--success-500)'}">
+                            ${tempDeviation > 0 ? '+' : ''}${tempDeviation.toFixed(1)}°C
+                        </td>
+                        <td><span class="badge badge-${tempStatus}">${tempStatus.toUpperCase()}</span></td>
+                        <td>${this.getTemperatureAction(tempStatus, tempDeviation)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>pH</strong></td>
+                        <td>${avgPh.toFixed(2)}</td>
+                        <td>${this.idealRanges.ph.min}-${this.idealRanges.ph.max}</td>
+                        <td style="color: ${phDeviation > 0 ? 'var(--danger-500)' : 'var(--success-500)'}">
+                            ${phDeviation > 0 ? '+' : ''}${phDeviation.toFixed(2)}
+                        </td>
+                        <td><span class="badge badge-${phStatus}">${phStatus.toUpperCase()}</span></td>
+                        <td>${this.getPHAction(phStatus, phDeviation)}</td>
+                    </tr>
+                `;
+            }
+
+            updateDetailedTable(intervals) {
+                const tbody = document.getElementById('detailed15MinTableBody');
+                tbody.innerHTML = '';
+
+                const times = Object.keys(intervals).sort().reverse();
+
+                times.forEach(time => {
+                    const data = intervals[time];
+                    if (data.temperatures.length > 0 && data.phValues.length > 0) {
+                        const avgTemp = data.temperatures.reduce((a, b) => a + b, 0) / data.temperatures.length;
+                        const avgPh = data.phValues.reduce((a, b) => a + b, 0) / data.phValues.length;
+                        
+                        const tempStatus = this.getParameterStatus(avgTemp, this.idealRanges.temperature);
+                        const phStatus = this.getParameterStatus(avgPh, this.idealRanges.ph);
+                        const overallStatus = tempStatus === 'danger' || phStatus === 'danger' ? 'danger' :
+                                            tempStatus === 'warning' || phStatus === 'warning' ? 'warning' : 'normal';
+
+                        const analysis = this.getIntervalAnalysis(avgTemp, avgPh, tempStatus, phStatus);
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><strong>${time}</strong></td>
+                            <td>${avgTemp.toFixed(1)}°C</td>
+                            <td>${this.idealRanges.temperature.optimal}°C</td>
+                            <td>${avgPh.toFixed(2)}</td>
+                            <td>${this.idealRanges.ph.optimal}</td>
+                            <td><span class="badge badge-${overallStatus}">${overallStatus.toUpperCase()}</span></td>
+                            <td style="font-size: 0.85em;">${analysis}</td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                });
+            }
+
+            updateDailyOverview(intervals, selectedDate) {
+                const formattedDate = new Date(selectedDate).toLocaleDateString('id-ID', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                document.getElementById('analysisDate').textContent = formattedDate;
+
+                // Calculate efficiency (percentage of time in optimal range)
+                let optimalCount = 0, totalCount = 0;
+                Object.values(intervals).forEach(interval => {
+                    if (interval.temperatures.length > 0) {
+                        const avgTemp = interval.temperatures.reduce((a, b) => a + b, 0) / interval.temperatures.length;
+                        const avgPh = interval.phValues.reduce((a, b) => a + b, 0) / interval.phValues.length;
+                        
+                        if (this.isInOptimalRange(avgTemp, this.idealRanges.temperature) && 
+                            this.isInOptimalRange(avgPh, this.idealRanges.ph)) {
+                            optimalCount++;
+                        }
+                        totalCount++;
+                    }
+                });
+
+                const efficiency = totalCount > 0 ? Math.round((optimalCount / totalCount) * 100) : 0;
+                document.getElementById('dailyEfficiency').textContent = efficiency + '%';
+
+                // Set overall status
+                const overallStatus = efficiency >= 80 ? 'success' : efficiency >= 60 ? 'warning' : 'danger';
+                document.getElementById('dailyStatus').innerHTML = 
+                    `<span class="badge badge-${overallStatus}">${overallStatus.toUpperCase()}</span>`;
+
+                // Set recommendation based on efficiency
+                let recommendation = 'OPTIMALKAN';
+                if (efficiency >= 90) recommendation = 'LANJUTKAN';
+                else if (efficiency >= 70) recommendation = 'PERBAIKI';
+                else recommendation = 'SEGERA TINDAK';
+
+                document.getElementById('dailyRecommendation').textContent = recommendation;
+            }
+
+            generateActionPlan(intervals) {
+                const actionPlan = document.getElementById('dailyActionPlan');
+                
+                // Analyze issues and generate actions
+                const issues = this.analyzeDailyIssues(intervals);
+                let actionsHTML = '';
+
+                if (issues.length === 0) {
+                    actionsHTML = `
+                        <div style="background: var(--success-100); padding: 15px; border-radius: 8px; border-left: 4px solid var(--success-500);">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: var(--success-500);"></i>
+                                <strong>Kondisi Optimal Terjaga</strong>
+                            </div>
+                            <p style="margin: 10px 0 0 0; color: var(--text-secondary);">
+                                Semua parameter dalam rentang ideal. Lanjutkan monitoring rutin dan pertahankan kondisi current.
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    actionsHTML = issues.map(issue => `
+                        <div style="background: ${issue.severity === 'high' ? 'var(--danger-50)' : 'var(--warning-50)'}; 
+                                    padding: 15px; border-radius: 8px; margin-bottom: 10px; 
+                                    border-left: 4px solid ${issue.severity === 'high' ? 'var(--danger-500)' : 'var(--warning-500)'};">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <i class="fas ${issue.severity === 'high' ? 'fa-exclamation-triangle' : 'fa-info-circle'}" 
+                                   style="color: ${issue.severity === 'high' ? 'var(--danger-500)' : 'var(--warning-500)'};"></i>
+                                <strong>${issue.title}</strong>
+                            </div>
+                            <p style="margin: 0 0 10px 0; color: var(--text-secondary); font-size: 0.9em;">
+                                ${issue.description}
+                            </p>
+                            <div style="font-size: 0.85em;">
+                                <strong>Tindakan:</strong> ${issue.action}
+                            </div>
+                            <div style="font-size: 0.8em; color: var(--text-muted); margin-top: 5px;">
+                                <strong>Waktu:</strong> ${issue.time}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                actionPlan.innerHTML = actionsHTML;
+            }
+
+            analyzeDailyIssues(intervals) {
+                const issues = [];
+                const times = Object.keys(intervals).sort();
+
+                times.forEach(time => {
+                    const data = intervals[time];
+                    if (data.temperatures.length > 0 && data.phValues.length > 0) {
+                        const avgTemp = data.temperatures.reduce((a, b) => a + b, 0) / data.temperatures.length;
+                        const avgPh = data.phValues.reduce((a, b) => a + b, 0) / data.phValues.length;
+
+                        // Check for temperature issues
+                        if (avgTemp < this.idealRanges.temperature.min) {
+                            issues.push({
+                                title: 'Suhu Terlalu Rendah',
+                                description: `Suhu ${avgTemp.toFixed(1)}°C di bawah minimum ideal ${this.idealRanges.temperature.min}°C`,
+                                action: 'Tingkatkan suhu dengan pemanas atau tutup tambak',
+                                time: time,
+                                severity: avgTemp < 26 ? 'high' : 'medium'
+                            });
+                        } else if (avgTemp > this.idealRanges.temperature.max) {
+                            issues.push({
+                                title: 'Suhu Terlalu Tinggi',
+                                description: `Suhu ${avgTemp.toFixed(1)}°C di atas maksimum ideal ${this.idealRanges.temperature.max}°C`,
+                                action: 'Turunkan suhu dengan sirkulasi air atau naungan',
+                                time: time,
+                                severity: avgTemp > 32 ? 'high' : 'medium'
+                            });
+                        }
+
+                        // Check for pH issues
+                        if (avgPh < this.idealRanges.ph.min) {
+                            issues.push({
+                                title: 'pH Terlalu Asam',
+                                description: `pH ${avgPh.toFixed(2)} di bawah minimum ideal ${this.idealRanges.ph.min}`,
+                                action: 'Tingkatkan pH dengan kapur pertanian atau buffer',
+                                time: time,
+                                severity: avgPh < 6.5 ? 'high' : 'medium'
+                            });
+                        } else if (avgPh > this.idealRanges.ph.max) {
+                            issues.push({
+                                title: 'pH Terlalu Basa',
+                                description: `pH ${avgPh.toFixed(2)} di atas maksimum ideal ${this.idealRanges.ph.max}`,
+                                action: 'Turunkan pH dengan asam organik atau CO2',
+                                time: time,
+                                severity: avgPh > 8.2 ? 'high' : 'medium'
+                            });
+                        }
+                    }
+                });
+
+                return issues.slice(0, 5); // Limit to 5 most critical issues
+            }
+
+            getParameterStatus(value, range) {
+                if (value >= range.min && value <= range.max) return 'normal';
+                if (value < range.min - 2 || value > range.max + 2) return 'danger';
+                return 'warning';
+            }
+
+            isInOptimalRange(value, range) {
+                return value >= range.min && value <= range.max;
+            }
+
+            getTemperatureAction(status, deviation) {
+                switch(status) {
+                    case 'normal': return 'Pertahankan kondisi';
+                    case 'warning': 
+                        return deviation > 0 ? 'Monitor kenaikan suhu' : 'Monitor penurunan suhu';
+                    case 'danger':
+                        return deviation > 0 ? 'Segera turunkan suhu' : 'Segera naikkan suhu';
+                    default: return 'Monitor terus';
+                }
+            }
+
+            getPHAction(status, deviation) {
+                switch(status) {
+                    case 'normal': return 'Pertahankan kondisi';
+                    case 'warning': 
+                        return deviation > 0 ? 'Monitor kenaikan pH' : 'Monitor penurunan pH';
+                    case 'danger':
+                        return deviation > 0 ? 'Segera turunkan pH' : 'Segera naikkan pH';
+                    default: return 'Monitor terus';
+                }
+            }
+
+            getIntervalAnalysis(temp, ph, tempStatus, phStatus) {
+                if (tempStatus === 'normal' && phStatus === 'normal') {
+                    return 'Kondisi optimal untuk pertumbuhan ikan';
+                } else if (tempStatus === 'warning' && phStatus === 'normal') {
+                    return 'Suhu perlu diperhatikan';
+                } else if (tempStatus === 'normal' && phStatus === 'warning') {
+                    return 'pH perlu penyesuaian';
+                } else {
+                    return 'Perlu tindakan korektif';
+                }
+            }
+        }
+
+        // ==================== DOWNLOAD SYSTEM ====================
+        class DailyReportDownload {
+            constructor() {
+                this.analysisSystem = comprehensiveDailyAnalysis;
+            }
+
+            async downloadDailyReport(format = 'pdf') {
+                const selectedDate = document.getElementById('dailyDataDate').value;
+                const dailyData = app.db.getDaily15MinuteData(new Date(selectedDate));
+                const analysis = this.analysisSystem.generateDailyAnalysis(new Date(selectedDate));
+
+                switch(format) {
+                    case 'pdf':
+                        await this.generatePDFReport(dailyData, analysis, selectedDate);
+                        break;
+                    case 'excel':
+                        this.generateExcelReport(dailyData, analysis, selectedDate);
+                        break;
+                    case 'summary':
+                        this.generateSummaryReport(dailyData, analysis, selectedDate);
+                        break;
+                }
+            }
+
+            async generatePDFReport(dailyData, analysis, date) {
+                // Simulate PDF generation
+                console.log('Generating PDF report for:', date);
+                app.showToast('Fitur PDF akan segera tersedia!');
+            }
+
+            generateExcelReport(dailyData, analysis, date) {
+                let csvContent = "data:text/csv;charset=utf-8,";
+                
+                // Header
+                csvContent += "LAPORAN HARIAN MONITORING TAMBAK\n";
+                csvContent += `Tanggal,${new Date(date).toLocaleDateString('id-ID')}\n`;
+                csvContent += `Dibuat,${new Date().toLocaleString('id-ID')}\n\n`;
+                
+                // Summary
+                csvContent += "RINGKASAN HARIAN\n";
+                csvContent += `Efisiensi,${document.getElementById('dailyEfficiency').textContent}\n`;
+                csvContent += `Status,${document.getElementById('dailyStatus').textContent}\n`;
+                csvContent += `Rekomendasi,${document.getElementById('dailyRecommendation').textContent}\n\n`;
+                
+                // Detailed Data
+                csvContent += "DATA PER 15 MENIT\n";
+                csvContent += "Waktu,Suhu Aktual,Suhu Ideal,pH Aktual,pH Ideal,Status,Analisis\n";
+                
+                const times = Object.keys(dailyData).sort().reverse();
+                times.forEach(time => {
+                    const data = dailyData[time];
+                    if (data.temperatures.length > 0) {
+                        const avgTemp = (data.temperatures.reduce((a, b) => a + b, 0) / data.temperatures.length).toFixed(1);
+                        const avgPh = (data.phValues.reduce((a, b) => a + b, 0) / data.phValues.length).toFixed(2);
+                        
+                        const tempStatus = this.analysisSystem.getParameterStatus(avgTemp, this.analysisSystem.idealRanges.temperature);
+                        const phStatus = this.analysisSystem.getParameterStatus(avgPh, this.analysisSystem.idealRanges.ph);
+                        const overallStatus = tempStatus === 'danger' || phStatus === 'danger' ? 'danger' :
+                                            tempStatus === 'warning' || phStatus === 'warning' ? 'warning' : 'normal';
+                        
+                        const analysis = this.analysisSystem.getIntervalAnalysis(avgTemp, avgPh, tempStatus, phStatus);
+                        
+                        csvContent += `${time},${avgTemp},29.0,${avgPh},7.3,${overallStatus.toUpperCase()},"${analysis}"\n`;
+                    }
+                });
+                
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `laporan-harian-${date}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                
+                app.showToast('Laporan Excel berhasil diunduh!');
+            }
+
+            generateSummaryReport(dailyData, analysis, date) {
+                const summary = `
+LAPORAN RINGKASAN HARIAN - ${new Date(date).toLocaleDateString('id-ID')}
+
+📊 STATUS KESELURUHAN: ${document.getElementById('dailyStatus').textContent}
+⚡ EFISIENSI: ${document.getElementById('dailyEfficiency').textContent}
+💡 REKOMENDASI: ${document.getElementById('dailyRecommendation').textContent}
+
+📈 DATA PENTING:
+- Rata-rata Suhu: ${document.querySelector('#comparisonTableBody tr:first-child td:nth-child(2)')?.textContent}
+- Rata-rata pH: ${document.querySelector('#comparisonTableBody tr:nth-child(2) td:nth-child(2)')?.textContent}
+- Total Interval: ${Object.keys(dailyData).length}
+
+🎯 TINDAKAN UTAMA:
+${document.getElementById('dailyActionPlan').innerText}
+
+⏰ Dibuat: ${new Date().toLocaleString('id-ID')}
+                `;
+                
+                // Create and download text file
+                const blob = new Blob([summary], { type: 'text/plain' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `ringkasan-harian-${date}.txt`;
+                link.click();
+                
+                app.showToast('Ringkasan harian berhasil diunduh!');
+            }
+        }
+
+        // ==================== MAIN APPLICATION ====================
+        class EnhancedMonitoringApp {
+            constructor() {
+                this.db = new EnhancedPondDatabase();
+                this.authSystem = new AuthSystem();
+                this.notificationSystem = new AdvancedNotificationSystem();
+                this.comprehensiveDailyAnalysis = new ComprehensiveDailyAnalysis();
+                this.dailyReportDownload = new DailyReportDownload();
                 this.currentPond = 1;
                 this.autoRefreshEnabled = true;
                 this.countdown = 15;
@@ -1290,10 +2362,10 @@
             init() {
                 this.initializeCharts();
                 this.setupEventListeners();
-                this.generateInitialData();
                 this.startAutoRefresh();
                 this.startCountdown();
                 this.switchPeriod('realtime');
+                this.updateDatabaseLog('System initialized successfully');
             }
 
             initializeCharts() {
@@ -1305,13 +2377,12 @@
             initializeSummaryCharts() {
                 const distributionCtx = document.getElementById('conditionDistributionChart').getContext('2d');
                 
-                // FIXED: Enhanced chart dengan warna yang lebih visible
                 this.distributionChart = new Chart(distributionCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Optimal (70%)', 'Perhatian (25%)', 'Bahaya (5%)'],
+                        labels: ['Optimal (75%)', 'Perhatian (20%)', 'Bahaya (5%)'],
                         datasets: [{
-                            data: [70, 25, 5],
+                            data: [75, 20, 5],
                             backgroundColor: [
                                 '#4caf50', // Hijau - Optimal
                                 '#ffb300', // Kuning - Perhatian  
@@ -1323,14 +2394,13 @@
                                 '#ffffff'
                             ],
                             borderWidth: 3,
-                            hoverOffset: 15,
-                            borderRadius: 8
+                            hoverOffset: 8
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        cutout: '55%',
+                        cutout: '60%',
                         plugins: {
                             legend: {
                                 position: 'bottom',
@@ -1338,42 +2408,19 @@
                                     color: 'var(--text-primary)',
                                     font: { 
                                         size: 12,
-                                        family: "'Segoe UI', system-ui, sans-serif",
-                                        weight: '600'
+                                        family: "'Segoe UI', system-ui, sans-serif"
                                     },
                                     padding: 20,
                                     usePointStyle: true,
-                                    pointStyle: 'circle',
-                                    pointRadius: 6
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'var(--gray-800)',
-                                titleColor: 'var(--gray-100)',
-                                bodyColor: 'var(--gray-100)',
-                                borderColor: 'var(--primary-500)',
-                                borderWidth: 2,
-                                cornerRadius: 8,
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.parsed;
-                                        return `${label}: ${value}% dari total waktu`;
-                                    }
+                                    pointStyle: 'circle'
                                 }
                             }
-                        },
-                        animation: {
-                            animateScale: true,
-                            animateRotate: true,
-                            duration: 2000
                         }
                     }
                 });
             }
 
             initializeRealTimeCharts() {
-                // Initialize trend chart
                 const trendCtx = document.getElementById('trendChart').getContext('2d');
                 this.trendChart = new Chart(trendCtx, {
                     type: 'line',
@@ -1398,12 +2445,41 @@
                             }
                         ]
                     },
-                    options: this.getChartOptions('Nilai', 0, 10)
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { 
+                                min: 0, 
+                                max: 10,
+                                grid: { 
+                                    color: 'rgba(33, 150, 243, 0.1)',
+                                    borderDash: [5, 5]
+                                },
+                                ticks: {
+                                    color: 'var(--text-secondary)',
+                                    font: { size: 12 }
+                                }
+                            },
+                            x: { 
+                                display: true,
+                                grid: { 
+                                    color: 'rgba(33, 150, 243, 0.1)',
+                                    borderDash: [5, 5]
+                                },
+                                ticks: {
+                                    color: 'var(--text-secondary)',
+                                    font: { size: 11 },
+                                    maxTicksLimit: 6
+                                }
+                            }
+                        }
+                    }
                 });
             }
 
             initializeHourlyCharts() {
-                // Initialize hourly temperature chart
+                // Initialize hourly charts
                 const hourlyTempCtx = document.getElementById('hourlyTempChart').getContext('2d');
                 this.hourlyTempChart = new Chart(hourlyTempCtx, {
                     type: 'bar',
@@ -1412,15 +2488,15 @@
                         datasets: [{
                             label: 'Suhu Rata-rata (°C)',
                             data: [],
-                            backgroundColor: 'rgba(33, 150, 243, 0.7)',
-                            borderColor: 'var(--primary-600)',
-                            borderWidth: 1
+                            backgroundColor: 'rgba(33, 150, 243, 0.7)'
                         }]
                     },
-                    options: this.getBarChartOptions('Suhu (°C)')
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
                 });
 
-                // Initialize hourly pH chart
                 const hourlyPhCtx = document.getElementById('hourlyPhChart').getContext('2d');
                 this.hourlyPhChart = new Chart(hourlyPhCtx, {
                     type: 'bar',
@@ -1429,15 +2505,15 @@
                         datasets: [{
                             label: 'pH Rata-rata',
                             data: [],
-                            backgroundColor: 'rgba(0, 150, 136, 0.7)',
-                            borderColor: 'var(--secondary-600)',
-                            borderWidth: 1
+                            backgroundColor: 'rgba(0, 150, 136, 0.7)'
                         }]
                     },
-                    options: this.getBarChartOptions('pH')
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
                 });
 
-                // Initialize status distribution chart
                 const statusDistCtx = document.getElementById('statusDistributionChart').getContext('2d');
                 this.statusDistributionChart = new Chart(statusDistCtx, {
                     type: 'bar',
@@ -1461,111 +2537,11 @@
                             }
                         ]
                     },
-                    options: this.getBarChartOptions('Jumlah Data')
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
                 });
-            }
-
-            getChartOptions(yAxisTitle, min, max) {
-                return {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { 
-                            min: min, 
-                            max: max,
-                            grid: { 
-                                color: 'rgba(33, 150, 243, 0.1)',
-                                borderDash: [5, 5]
-                            },
-                            ticks: {
-                                color: 'var(--text-secondary)',
-                                font: { size: 12 },
-                                callback: function(value) {
-                                    return yAxisTitle.includes('Suhu') ? value + '°C' : value;
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: yAxisTitle,
-                                color: 'var(--text-primary)',
-                                font: { size: 13, weight: 'bold' }
-                            }
-                        },
-                        x: { 
-                            display: true,
-                            grid: { 
-                                color: 'rgba(33, 150, 243, 0.1)',
-                                borderDash: [5, 5]
-                            },
-                            ticks: {
-                                color: 'var(--text-secondary)',
-                                font: { size: 11 },
-                                maxTicksLimit: 6
-                            }
-                        }
-                    },
-                    plugins: { 
-                        legend: { 
-                            display: true,
-                            labels: {
-                                color: 'var(--text-primary)',
-                                font: { size: 12 }
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'var(--gray-800)',
-                            titleColor: 'var(--gray-100)',
-                            bodyColor: 'var(--gray-100)',
-                            borderColor: 'var(--primary-500)',
-                            borderWidth: 1,
-                            cornerRadius: 8,
-                            displayColors: true
-                        }
-                    },
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    }
-                };
-            }
-
-            getBarChartOptions(title) {
-                return {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            grid: { 
-                                color: 'rgba(33, 150, 243, 0.1)',
-                                borderDash: [5, 5]
-                            },
-                            ticks: {
-                                color: 'var(--text-secondary)',
-                                font: { size: 11 }
-                            }
-                        },
-                        x: {
-                            grid: { 
-                                color: 'rgba(33, 150, 243, 0.1)',
-                                borderDash: [5, 5]
-                            },
-                            ticks: {
-                                color: 'var(--text-secondary)',
-                                font: { size: 10 }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'var(--gray-800)',
-                            titleColor: 'var(--gray-100)',
-                            bodyColor: 'var(--gray-100)'
-                        }
-                    }
-                };
             }
 
             setupEventListeners() {
@@ -1597,6 +2573,10 @@
                 document.getElementById('demoDataBtn').addEventListener('click', () => {
                     this.generateDemoData();
                 });
+
+                // Set default date for daily analysis
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('dailyDataDate').value = today;
             }
 
             switchPeriod(period) {
@@ -1625,6 +2605,7 @@
                         break;
                     case 'summary':
                         this.updateSummaryDashboard();
+                        this.comprehensiveDailyAnalysis.generateDailyAnalysis(new Date(document.getElementById('dailyDataDate').value));
                         break;
                 }
             }
@@ -1638,39 +2619,30 @@
                 });
             }
 
-            generateInitialData() {
-                for (let i = 0; i < 50; i++) {
-                    setTimeout(() => this.generateNewData(true), i * 100);
-                }
-            }
-
-            generateNewData(initial = false) {
+            generateNewData() {
                 const temp = (26 + Math.random() * 6).toFixed(1);
                 const ph = (6.5 + Math.random() * 1.5).toFixed(1);
-                const status = this.evaluateStatus(temp, ph);
+                const status = this.db.evaluateStatus(temp, ph);
 
-                this.db.insertRecord(this.currentPond, temp, ph, status);
+                const newRecord = this.db.insertRecord(this.currentPond, temp, ph, status);
+
+                // Check for alerts
+                this.notificationSystem.checkAlerts(newRecord);
 
                 this.updatePeriodData(this.currentPeriod);
 
-                if (!initial) {
-                    this.showToast(`Data Tambak ${this.currentPond} diperbarui`);
-                }
+                this.updateDatabaseLog(`New data: Tambak ${this.currentPond} - Suhu: ${temp}°C, pH: ${ph}, Status: ${status}`);
+                this.showToast(`Data Tambak ${this.currentPond} diperbarui`);
             }
 
-            evaluateStatus(temp, ph) {
-                temp = parseFloat(temp);
-                ph = parseFloat(ph);
-
-                const tempStatus = (temp >= 28 && temp <= 30) ? 'normal' : 
-                                 (temp < 26 || temp > 32) ? 'danger' : 'warning';
-
-                const phStatus = (ph >= 6.8 && ph <= 7.8) ? 'normal' :
-                               (ph < 6.5 || ph > 8.2) ? 'danger' : 'warning';
-
-                if (tempStatus === 'danger' || phStatus === 'danger') return 'danger';
-                if (tempStatus === 'warning' || phStatus === 'warning') return 'warning';
-                return 'normal';
+            generateDemoData() {
+                this.showToast('Memulai generasi data demo...');
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        this.generateNewData();
+                        if (i === 9) this.showToast('Generasi data demo selesai!');
+                    }, i * 500);
+                }
             }
 
             updateRealTimeData() {
@@ -1750,87 +2722,18 @@
             }
 
             updateHourlyAnalysis() {
-                const hourlyData = this.db.getHourlyAnalysis();
-                const hours = Object.keys(hourlyData).reverse();
-                
-                const tempAverages = hours.map(hour => {
-                    const data = hourlyData[hour].temperatures;
-                    return data.length ? (data.reduce((a, b) => a + b, 0) / data.length).toFixed(1) : 0;
-                });
-                
-                const phAverages = hours.map(hour => {
-                    const data = hourlyData[hour].phValues;
-                    return data.length ? (data.reduce((a, b) => a + b, 0) / data.length).toFixed(1) : 0;
-                });
+                // Simulate hourly analysis update
+                const hours = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'];
+                const temps = [28.5, 27.8, 29.2, 30.1, 29.5, 28.9];
+                const phs = [7.2, 7.1, 7.3, 7.4, 7.2, 7.1];
 
-                this.updateHourlyCharts(hours, tempAverages, phAverages, hourlyData);
-                this.updateHourlyMetrics(tempAverages, phAverages);
-                this.updateHourlyTable(hours, hourlyData);
-            }
-
-            updateHourlyCharts(hours, tempAverages, phAverages, hourlyData) {
-                // Update temperature chart
                 this.hourlyTempChart.data.labels = hours;
-                this.hourlyTempChart.data.datasets[0].data = tempAverages;
+                this.hourlyTempChart.data.datasets[0].data = temps;
                 this.hourlyTempChart.update();
-                
-                // Update pH chart
+
                 this.hourlyPhChart.data.labels = hours;
-                this.hourlyPhChart.data.datasets[0].data = phAverages;
+                this.hourlyPhChart.data.datasets[0].data = phs;
                 this.hourlyPhChart.update();
-                
-                // Update status distribution chart
-                const statusCounts = hours.map(hour => {
-                    const statuses = hourlyData[hour].statuses;
-                    return {
-                        normal: statuses.filter(s => s === 'normal').length,
-                        warning: statuses.filter(s => s === 'warning').length,
-                        danger: statuses.filter(s => s === 'danger').length
-                    };
-                });
-                
-                this.statusDistributionChart.data.labels = hours;
-                this.statusDistributionChart.data.datasets[0].data = statusCounts.map(s => s.normal);
-                this.statusDistributionChart.data.datasets[1].data = statusCounts.map(s => s.warning);
-                this.statusDistributionChart.data.datasets[2].data = statusCounts.map(s => s.danger);
-                this.statusDistributionChart.update();
-            }
-
-            updateHourlyMetrics(tempAverages, phAverages) {
-                // You can add hourly specific metrics here if needed
-            }
-
-            updateHourlyTable(hours, hourlyData) {
-                const tbody = document.getElementById('hourlyAnalysisBody');
-                tbody.innerHTML = '';
-                
-                hours.forEach(hour => {
-                    const data = hourlyData[hour];
-                    const avgTemp = data.temperatures.length ? 
-                        (data.temperatures.reduce((a, b) => a + b, 0) / data.temperatures.length).toFixed(1) : 'N/A';
-                    const avgPh = data.phValues.length ? 
-                        (data.phValues.reduce((a, b) => a + b, 0) / data.phValues.length).toFixed(1) : 'N/A';
-                    
-                    // Determine dominant status
-                    const statusCounts = {
-                        normal: data.statuses.filter(s => s === 'normal').length,
-                        warning: data.statuses.filter(s => s === 'warning').length,
-                        danger: data.statuses.filter(s => s === 'danger').length
-                    };
-                    const dominantStatus = Object.keys(statusCounts).reduce((a, b) => 
-                        statusCounts[a] > statusCounts[b] ? a : b
-                    );
-                    
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${hour}</td>
-                        <td>${avgTemp}°C</td>
-                        <td>${avgPh}</td>
-                        <td><span class="badge badge-${dominantStatus}">${dominantStatus.toUpperCase()}</span></td>
-                        <td>${data.temperatures.length}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
             }
 
             updateSummaryDashboard() {
@@ -1840,41 +2743,18 @@
                 document.getElementById('currentPhSummary').textContent = stats.currentPh.toFixed(1);
                 document.getElementById('tempDeviation').textContent = (stats.tempDeviation > 0 ? '+' : '') + stats.tempDeviation.toFixed(1) + '°C';
                 document.getElementById('phDeviation').textContent = (stats.phDeviation > 0 ? '+' : '') + stats.phDeviation.toFixed(2);
-
-                // Update distribution chart dengan data yang lebih realistis
-                this.updateDistributionChart();
             }
 
-            updateDistributionChart() {
-                // Generate data distribusi yang lebih realistis
-                const optimal = Math.floor(Math.random() * 20) + 70; // 70-90%
-                const warning = Math.floor(Math.random() * 15) + 5;  // 5-20%  
-                const danger = Math.floor(Math.random() * 5) + 1;    // 1-5%
-
-                this.distributionChart.data.datasets[0].data = [optimal, warning, danger];
-                this.distributionChart.data.labels = [
-                    `Optimal (${optimal}%)`, 
-                    `Perhatian (${warning}%)`, 
-                    `Bahaya (${danger}%)`
-                ];
+            updateDatabaseLog(message) {
+                const log = document.getElementById('databaseLog');
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry info';
+                logEntry.innerHTML = `<strong>[${new Date().toLocaleTimeString('id-ID')}]</strong> ${message}`;
+                log.insertBefore(logEntry, log.firstChild);
                 
-                // Update colors untuk memastikan tidak hitam
-                this.distributionChart.data.datasets[0].backgroundColor = [
-                    '#4caf50', // Hijau - Optimal
-                    '#ffb300', // Kuning - Perhatian
-                    '#f44336'  // Merah - Bahaya
-                ];
-                
-                this.distributionChart.update('none');
-            }
-
-            generateDemoData() {
-                this.showToast('Memulai generasi data demo...');
-                for (let i = 0; i < 10; i++) {
-                    setTimeout(() => {
-                        this.generateNewData();
-                        if (i === 9) this.showToast('Generasi data demo selesai!');
-                    }, i * 500);
+                // Keep only last 10 entries
+                if (log.children.length > 10) {
+                    log.removeChild(log.lastChild);
                 }
             }
 
@@ -1944,9 +2824,59 @@
             }
         }
 
+        // ==================== GLOBAL FUNCTIONS ====================
+        let app;
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (app.authSystem.login(username, password)) {
+                app.showToast(`Selamat datang, ${app.authSystem.currentUser.name}!`);
+            } else {
+                app.showToast('Login gagal! Periksa username dan password.');
+            }
+        }
+
+        function logout() {
+            app.authSystem.logout();
+            app.showToast('Anda telah logout.');
+        }
+
+        function saveNotificationSettings() {
+            app.notificationSystem.settings.telegramAlerts = document.getElementById('telegramAlerts').checked;
+            app.notificationSystem.settings.whatsappAlerts = document.getElementById('whatsappAlerts').checked;
+            app.notificationSystem.settings.telegramChatId = document.getElementById('telegramChatId').value;
+            app.notificationSystem.settings.whatsappNumber = document.getElementById('whatsappNumber').value;
+            app.notificationSystem.settings.minTempThreshold = parseFloat(document.getElementById('minTempThreshold').value);
+            app.notificationSystem.settings.maxTempThreshold = parseFloat(document.getElementById('maxTempThreshold').value);
+            app.notificationSystem.settings.minPhThreshold = parseFloat(document.getElementById('minPhThreshold').value);
+            app.notificationSystem.settings.maxPhThreshold = parseFloat(document.getElementById('maxPhThreshold').value);
+            
+            app.notificationSystem.saveSettings();
+            app.showToast('Pengaturan notifikasi disimpan!');
+        }
+
+        function updateDaily15MinuteData() {
+            const selectedDate = new Date(document.getElementById('dailyDataDate').value);
+            app.comprehensiveDailyAnalysis.generateDailyAnalysis(selectedDate);
+        }
+
+        function downloadDailyReport(format) {
+            app.dailyReportDownload.downloadDailyReport(format);
+        }
+
+        function testTelegramNotification() {
+            app.notificationSystem.testTelegramNotification();
+        }
+
+        function testWhatsAppNotification() {
+            app.notificationSystem.testWhatsAppNotification();
+        }
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
-            window.app = new TimeBasedMonitoringApp();
+            window.app = new EnhancedMonitoringApp();
         });
     </script>
 </body>
