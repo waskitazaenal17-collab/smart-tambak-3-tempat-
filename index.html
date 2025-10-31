@@ -756,6 +756,48 @@
             margin-bottom: 16px;
             display: inline-block;
         }
+
+        /* === DISTRIBUTION CHART FIX === */
+        .distribution-chart-container {
+            height: 250px;
+            margin-top: 20px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        /* === RECOMMENDATION STYLES === */
+        .recommendation-content {
+            margin-top: 12px;
+        }
+
+        .recommendation-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+
+        .recommendation-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-container {
+            background: var(--primary-50);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--primary-100);
+        }
+
+        /* Ensure chart background is transparent */
+        .chartjs-render-monitor {
+            background: transparent !important;
+        }
     </style>
 </head>
 <body>
@@ -790,266 +832,162 @@
                 <div class="stat-card">
                     <div class="stat-label">Total Data</div>
                     <div class="stat-value" id="totalData">0</div>
-                    <div class="stat-label">Records</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Kondisi Optimal</div>
-                    <div class="stat-value" id="normalCount">0</div>
-                    <div class="stat-label">Hari Ini</div>
+                    <div class="stat-label">Status Normal</div>
+                    <div class="stat-value" id="normalStatus">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Peringatan</div>
-                    <div class="stat-value" id="warningCount">0</div>
-                    <div class="stat-label">Hari Ini</div>
+                    <div class="stat-label">Status Warning</div>
+                    <div class="stat-value" id="warningStatus">0</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Sistem</div>
-                    <div class="stat-value" id="uptime">100%</div>
-                    <div class="stat-label">Uptime</div>
+                    <div class="stat-label">Status Danger</div>
+                    <div class="stat-value" id="dangerStatus">0</div>
                 </div>
-            </div>
-
-            <!-- Alert Banner -->
-            <div id="alertBanner" class="alert-banner">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span id="alertMessage">Peringatan Sistem: Nilai parameter di luar rentang aman!</span>
-            </div>
-
-            <!-- AI Recommendation -->
-            <div id="aiRecommendation" class="ai-recommendation">
-                <div class="recommendation-title">
-                    <i class="fas fa-robot"></i> REKOMENDASI SISTEM AI
-                </div>
-                <div id="recommendationText">Menganalisis kondisi saat ini untuk rekomendasi optimal...</div>
             </div>
 
             <!-- Pond Selection -->
             <div class="pond-buttons">
-                <button class="pond-btn active" data-pond="1">
-                    <i class="fas fa-fish"></i> TAMBAK 1
+                <button class="pond-btn active" data-pond="1">Tambak 1</button>
+                <button class="pond-btn" data-pond="2">Tambak 2</button>
+                <button class="pond-btn" data-pond="3">Tambak 3</button>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn" id="generateDataBtn">
+                    <i class="fas fa-plus"></i> Generate Data Baru
                 </button>
-                <button class="pond-btn" data-pond="2">
-                    <i class="fas fa-fish"></i> TAMBAK 2
+                <button class="btn btn-success" id="autoRefreshBtn">
+                    <i class="fas fa-play"></i> Mulai Auto-Refresh
                 </button>
-                <button class="pond-btn" data-pond="3">
-                    <i class="fas fa-fish"></i> TAMBAK 3
+                <button class="btn btn-warning" id="demoDataBtn">
+                    <i class="fas fa-bolt"></i> Data Demo
                 </button>
             </div>
 
             <!-- Main Dashboard -->
             <div class="dashboard">
-                <!-- Temperature Card -->
                 <div class="card metric-card">
-                    <h3><i class="fas fa-thermometer-half"></i> SUHU AIR</h3>
-                    <div class="metric-value" id="currentTemp">28.5°C</div>
-                    <div class="metric-label">Pembacaan Saat Ini <span class="trend-indicator" id="tempTrend"></span></div>
+                    <h3><i class="fas fa-thermometer-half"></i> SUHU SAAT INI</h3>
+                    <div class="metric-value" id="currentTemperature">28.5°C</div>
+                    <div class="metric-label">Tambak 1</div>
                     <div class="status-indicator">
-                        <div class="status-dot status-normal" id="tempDot"></div>
-                        <span id="tempStatus">Optimal</span>
-                    </div>
-                    <div class="threshold-info">
-                        <strong>🟢 Rentang Optimal:</strong> 28°C - 30°C<br>
-                        <strong>🟡 Rentang Perhatian:</strong> 26-28°C atau 30-32°C<br>
-                        <strong>🔴 Rentang Kritis:</strong> &lt;26°C atau &gt;32°C
+                        <div class="status-dot status-normal"></div>
+                        <span>Kondisi Optimal</span>
                     </div>
                 </div>
 
-                <!-- pH Card -->
                 <div class="card metric-card">
-                    <h3><i class="fas fa-tint"></i> TINGKAT pH</h3>
+                    <h3><i class="fas fa-tint"></i> pH SAAT INI</h3>
                     <div class="metric-value" id="currentPh">7.2</div>
-                    <div class="metric-label">Tingkat Keasaman <span class="trend-indicator" id="phTrend"></span></div>
+                    <div class="metric-label">Tambak 1</div>
                     <div class="status-indicator">
-                        <div class="status-dot status-normal" id="phDot"></div>
-                        <span id="phStatus">Optimal</span>
-                    </div>
-                    <div class="threshold-info">
-                        <strong>🟢 Rentang Optimal:</strong> 6.8 - 7.8<br>
-                        <strong>🟡 Rentang Perhatian:</strong> 6.5-6.8 atau 7.8-8.2<br>
-                        <strong>🔴 Rentang Kritis:</strong> &lt;6.5 atau &gt;8.2
+                        <div class="status-dot status-normal"></div>
+                        <span>Kondisi Optimal</span>
                     </div>
                 </div>
 
-                <!-- System Card -->
                 <div class="card">
-                    <h3><i class="fas fa-cogs"></i> KONTROL SISTEM</h3>
-                    <div class="metric-value" style="font-size: 2em; color: var(--success-500);">
-                        <i class="fas fa-circle"></i> ONLINE
-                    </div>
-                    <div class="metric-label">Monitoring Real-time Aktif</div>
-                    
-                    <div class="controls">
-                        <button class="btn" id="refreshBtn">
-                            <i class="fas fa-sync"></i> Refresh
-                        </button>
-                        <button class="btn btn-success" id="demoBtn">
-                            <i class="fas fa-bolt"></i> Demo Cepat
-                        </button>
-                        <button class="btn btn-warning" id="autoRefreshBtn">
-                            <i class="fas fa-pause"></i> Jeda
-                        </button>
-                    </div>
-
-                    <div class="threshold-info">
-                        <strong>📊 Metrik Sistem:</strong><br>
-                        • Waktu Respons: &lt;100ms<br>
-                        • Akurasi Data: 99.8%<br>
-                        • Kesehatan Sensor: Optimal
-                    </div>
-                </div>
-            </div>
-
-            <!-- Charts Section -->
-            <div class="dashboard">
-                <div class="card">
-                    <h3><i class="fas fa-chart-line"></i> GRAFIK SUHU REAL-TIME (15 MENIT)</h3>
+                    <h3><i class="fas fa-chart-line"></i> TREND 15 MENIT TERAKHIR</h3>
                     <div class="chart-container">
-                        <canvas id="tempChart"></canvas>
-                    </div>
-                    <div class="threshold-info" style="margin-top: 15px;">
-                        <strong>📈 Data 15 Menit Terakhir:</strong>
-                        <div id="tempChartData" style="margin-top: 8px; font-size: 0.9em;">
-                            Memuat data grafik...
-                        </div>
+                        <canvas id="trendChart"></canvas>
                     </div>
                 </div>
+
                 <div class="card">
-                    <h3><i class="fas fa-chart-area"></i> GRAFIK pH REAL-TIME (15 MENIT)</h3>
-                    <div class="chart-container">
-                        <canvas id="phChart"></canvas>
-                    </div>
-                    <div class="threshold-info" style="margin-top: 15px;">
-                        <strong>📊 Data 15 Menit Terakhir:</strong>
-                        <div id="phChartData" style="margin-top: 8px; font-size: 0.9em;">
-                            Memuat data grafik...
-                        </div>
-                    </div>
+                    <h3><i class="fas fa-history"></i> DATA TERBARU</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Suhu</th>
+                                <th>pH</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentDataBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
+
                 <div class="card">
-                    <h3><i class="fas fa-database"></i> LOG DATABASE & ANALISIS AI</h3>
+                    <h3><i class="fas fa-database"></i> LOG DATABASE</h3>
                     <div class="database-log" id="databaseLog">
-                        <div class="log-entry info">
-                            [12:00:00] SISTEM: Monitoring AI Diaktifkan - Analisis Prediktif Berjalan
+                        <!-- Log entries will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-robot"></i> REKOMENDASI AI</h3>
+                    <div class="ai-recommendation" id="aiRecommendation">
+                        <div class="recommendation-title">
+                            <i class="fas fa-brain"></i> ANALISIS KONDISI SAAT INI
                         </div>
-                        <div class="log-entry">
-                            [12:00:00] INSERT: Tambak 1 - Suhu: 28.5°C, pH: 7.2 - STATUS: OPTIMAL
+                        <div class="recommendation-content">
+                            <div class="recommendation-item">
+                                <i class="fas fa-check-circle" style="color: var(--success-500);"></i>
+                                <span>Semua parameter dalam kondisi optimal</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-sync-alt" style="color: var(--primary-500);"></i>
+                                <span>Lanjutkan monitoring rutin</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-chart-line" style="color: var(--warning-500);"></i>
+                                <span>Pantau fluktuasi suhu harian</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Data Table -->
-            <div class="card">
-                <h3><i class="fas fa-table"></i> DATA SENSOR 15 MENIT TERAKHIR</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Waktu</th>
-                            <th>Lokasi</th>
-                            <th>Suhu</th>
-                            <th>pH</th>
-                            <th>Status</th>
-                            <th>Trend</th>
-                            <th>Aksi DB</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dataTableBody">
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                                <i class="fas fa-spinner fa-spin"></i> Memuat data real-time...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
 
         <!-- Hourly Analysis Dashboard -->
         <div id="hourlyDashboard" class="dashboard-section" style="display: none;">
             <div class="period-indicator">
-                <i class="fas fa-clock"></i> Analisis Data Per Jam - 24 Jam Terakhir
+                <i class="fas fa-chart-bar"></i> Analisis Data Per Jam - 24 Jam Terakhir
             </div>
 
-            <div class="summary-dashboard">
-                <div class="summary-card">
-                    <h3><i class="fas fa-chart-bar"></i> RINGKASAN PER JAM - SUHU</h3>
-                    <div class="mini-chart-container">
+            <div class="dashboard">
+                <div class="card">
+                    <h3><i class="fas fa-thermometer-half"></i> RATA-RATA SUHU PER JAM</h3>
+                    <div class="chart-container">
                         <canvas id="hourlyTempChart"></canvas>
-                    </div>
-                    <div class="summary-grid">
-                        <div class="summary-item">
-                            <div class="label">Rata-rata per Jam</div>
-                            <div class="value" id="hourlyAvgTemp">28.5°C</div>
-                            <div class="trend trend-stable"><i class="fas fa-minus"></i> Stabil</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="label">Fluktuasi Maks</div>
-                            <div class="value" id="hourlyMaxTempFluctuation">1.2°C</div>
-                            <div class="trend trend-up"><i class="fas fa-arrow-up"></i> Naik</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="label">Jam Optimal</div>
-                            <div class="value" id="optimalHoursTemp">18/24</div>
-                            <div class="trend trend-stable"><i class="fas fa-check"></i> Baik</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="label">Rekomendasi</div>
-                            <div class="value" style="font-size: 1.1em;">Pertahankan</div>
-                            <div class="trend trend-stable"><i class="fas fa-thumbs-up"></i> Optimal</div>
-                        </div>
                     </div>
                 </div>
 
-                <div class="summary-card">
-                    <h3><i class="fas fa-chart-bar"></i> RINGKASAN PER JAM - pH</h3>
-                    <div class="mini-chart-container">
+                <div class="card">
+                    <h3><i class="fas fa-tint"></i> RATA-RATA pH PER JAM</h3>
+                    <div class="chart-container">
                         <canvas id="hourlyPhChart"></canvas>
                     </div>
-                    <div class="summary-grid">
-                        <div class="summary-item">
-                            <div class="label">Rata-rata per Jam</div>
-                            <div class="value" id="hourlyAvgPh">7.2</div>
-                            <div class="trend trend-stable"><i class="fas fa-minus"></i> Stabil</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="label">Fluktuasi Maks</div>
-                            <div class="value" id="hourlyMaxPhFluctuation">0.3</div>
-                            <div class="trend trend-down"><i class="fas fa-arrow-down"></i> Turun</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="label">Jam Optimal</div>
-                            <div class="value" id="optimalHoursPh">20/24</div>
-                            <div class="trend trend-stable"><i class="fas fa-check"></i> Baik</div>
-                        </div>
-                        <div class="summary-item">
-                            <div class="label">Rekomendasi</div>
-                            <div class="value" style="font-size: 1.1em;">Monitor Ketat</div>
-                            <div class="trend trend-warning"><i class="fas fa-eye"></i> Awasi</div>
-                        </div>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-chart-bar"></i> DISTRIBUSI STATUS PER JAM</h3>
+                    <div class="chart-container">
+                        <canvas id="statusDistributionChart"></canvas>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <h3><i class="fas fa-list-alt"></i> ANALISIS DETAIL PER JAM</h3>
-                <table class="analysis-table">
+                <h3><i class="fas fa-table"></i> DATA ANALISIS PER JAM</h3>
+                <table class="data-table">
                     <thead>
                         <tr>
                             <th>Jam</th>
-                            <th>Suhu Rata-rata</th>
-                            <th>pH Rata-rata</th>
-                            <th>Status Suhu</th>
-                            <th>Status pH</th>
-                            <th>Kondisi Overall</th>
-                            <th>Rekomendasi</th>
+                            <th>Avg Suhu</th>
+                            <th>Avg pH</th>
+                            <th>Status Dominan</th>
+                            <th>Jumlah Data</th>
                         </tr>
                     </thead>
-                    <tbody id="hourlyAnalysisTable">
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">
-                                <i class="fas fa-spinner fa-spin"></i> Menghitung analisis per jam...
-                            </td>
-                        </tr>
+                    <tbody id="hourlyAnalysisBody">
+                        <!-- Data will be populated by JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -1082,15 +1020,32 @@
                         </div>
                         <div class="summary-item">
                             <div class="label">Status</div>
-                            <div class="value" style="font-size: 1.1em;">Optimal</div>
+                            <div class="value" style="font-size: 1.1em;">
+                                <span class="badge badge-success">Optimal</span>
+                            </div>
                             <div class="trend trend-success"><i class="fas fa-thumbs-up"></i> Baik</div>
                         </div>
                     </div>
-                    <div class="threshold-info">
-                        <strong>📋 Rekomendasi Suhu:</strong><br>
-                        • Suhu saat ini dalam rentang optimal<br>
-                        • Pertahankan kondisi current<br>
-                        • Monitor fluktuasi harian
+                    
+                    <!-- ENHANCED RECOMMENDATION SECTION -->
+                    <div class="ai-recommendation" style="display: block;">
+                        <div class="recommendation-title">
+                            <i class="fas fa-robot"></i> REKOMENDASI AI UNTUK SUHU
+                        </div>
+                        <div class="recommendation-content">
+                            <div class="recommendation-item">
+                                <i class="fas fa-check-circle" style="color: var(--success-500);"></i>
+                                <span>Suhu saat ini dalam rentang optimal 28-30°C</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-sync-alt" style="color: var(--primary-500);"></i>
+                                <span>Pertahankan kondisi current monitoring</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-chart-line" style="color: var(--warning-500);"></i>
+                                <span>Monitor fluktuasi harian secara berkala</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1114,15 +1069,32 @@
                         </div>
                         <div class="summary-item">
                             <div class="label">Status</div>
-                            <div class="value" style="font-size: 1.1em;">Optimal</div>
+                            <div class="value" style="font-size: 1.1em;">
+                                <span class="badge badge-success">Optimal</span>
+                            </div>
                             <div class="trend trend-success"><i class="fas fa-thumbs-up"></i> Baik</div>
                         </div>
                     </div>
-                    <div class="threshold-info">
-                        <strong>📋 Rekomendasi pH:</strong><br>
-                        • pH dalam batas normal<br>
-                        • Cenderung sedikit asam<br>
-                        • Pantau trend 24 jam berikutnya
+                    
+                    <!-- ENHANCED RECOMMENDATION SECTION -->
+                    <div class="ai-recommendation" style="display: block;">
+                        <div class="recommendation-title">
+                            <i class="fas fa-robot"></i> REKOMENDASI AI UNTUK pH
+                        </div>
+                        <div class="recommendation-content">
+                            <div class="recommendation-item">
+                                <i class="fas fa-check-circle" style="color: var(--success-500);"></i>
+                                <span>pH dalam batas normal 6.8-7.8</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-exclamation-triangle" style="color: var(--warning-500);"></i>
+                                <span>Cenderung sedikit asam, pantau trend berikutnya</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-clock" style="color: var(--primary-500);"></i>
+                                <span>Analisis trend 24 jam untuk antisipasi</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1130,8 +1102,35 @@
             <div class="dashboard">
                 <div class="card">
                     <h3><i class="fas fa-chart-pie"></i> DISTRIBUSI KONDISI 24 JAM</h3>
-                    <div class="chart-container">
+                    <div class="distribution-chart-container">
                         <canvas id="conditionDistributionChart"></canvas>
+                    </div>
+                    
+                    <!-- ENHANCED LEGEND -->
+                    <div class="legend-container" style="margin-top: 20px;">
+                        <div class="legend-title" style="font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">
+                            <i class="fas fa-info-circle"></i> LEGENDA DISTRIBUSI:
+                        </div>
+                        <div class="legend-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                            <div class="legend-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--success-50); border-radius: 8px; border-left: 4px solid var(--success-500);">
+                                <div class="legend-color" style="width: 16px; height: 16px; border-radius: 50%; background: var(--success-500);"></div>
+                                <div class="legend-text" style="font-size: 0.9em;">
+                                    <strong style="color: var(--success-700);">OPTIMAL</strong> - Parameter dalam rentang ideal
+                                </div>
+                            </div>
+                            <div class="legend-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--warning-50); border-radius: 8px; border-left: 4px solid var(--warning-500);">
+                                <div class="legend-color" style="width: 16px; height: 16px; border-radius: 50%; background: var(--warning-500);"></div>
+                                <div class="legend-text" style="font-size: 0.9em;">
+                                    <strong style="color: var(--warning-700);">PERHATIAN</strong> - Mendekati batas kritis
+                                </div>
+                            </div>
+                            <div class="legend-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--danger-50); border-radius: 8px; border-left: 4px solid var(--danger-500);">
+                                <div class="legend-color" style="width: 16px; height: 16px; border-radius: 50%; background: var(--danger-500);"></div>
+                                <div class="legend-text" style="font-size: 0.9em;">
+                                    <strong style="color: var(--danger-700);">BAHAYA</strong> - Di luar batas aman
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="card">
@@ -1186,7 +1185,7 @@
         class TimeBasedPondDatabase {
             constructor() {
                 this.records = [];
-                this.maxRecords = 500; // Simpan lebih banyak data untuk analisis
+                this.maxRecords = 500;
                 this.stats = {
                     total: 0,
                     normal: 0,
@@ -1221,12 +1220,10 @@
                 this.stats[status]++;
             }
 
-            // Analisis data per jam
             getHourlyAnalysis(hours = 24) {
                 const now = new Date();
                 const hourlyData = {};
                 
-                // Inisialisasi data per jam
                 for (let i = 0; i < hours; i++) {
                     const hour = new Date(now);
                     hour.setHours(now.getHours() - i);
@@ -1238,7 +1235,6 @@
                     };
                 }
 
-                // Kelompokkan data per jam
                 this.records.forEach(record => {
                     const recordHour = record.timestamp.getHours().toString().padStart(2, '0') + ':00';
                     if (hourlyData[recordHour]) {
@@ -1251,19 +1247,17 @@
                 return hourlyData;
             }
 
-            // Analisis data 15 menit terakhir
             get15MinuteAnalysis() {
                 const now = new Date();
                 const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000);
                 
                 return this.records.filter(record => 
                     record.timestamp >= fifteenMinutesAgo
-                ).slice(0, 15); // Ambil 15 data terbaru
+                ).slice(0, 15);
             }
 
-            // Generate summary statistics
             getSummaryStats() {
-                const recentData = this.records.slice(0, 50); // 50 data terbaru
+                const recentData = this.records.slice(0, 50);
                 const temperatures = recentData.map(r => r.temperature);
                 const phValues = recentData.map(r => r.ph);
                 
@@ -1276,8 +1270,8 @@
                     minTemp: Math.min(...temperatures),
                     maxPh: Math.max(...phValues),
                     minPh: Math.min(...phValues),
-                    tempDeviation: temperatures[0] - 29, // Deviasi dari target 29°C
-                    phDeviation: phValues[0] - 7.3 // Deviasi dari target pH 7.3
+                    tempDeviation: (temperatures[0] || 0) - 29,
+                    phDeviation: (phValues[0] || 0) - 7.3
                 };
             }
         }
@@ -1303,67 +1297,114 @@
             }
 
             initializeCharts() {
-                // Real-time charts
                 this.initializeRealTimeCharts();
-                // Hourly analysis charts
                 this.initializeHourlyCharts();
-                // Summary charts
                 this.initializeSummaryCharts();
             }
 
-            initializeRealTimeCharts() {
-                const tempCtx = document.getElementById('tempChart').getContext('2d');
-                const phCtx = document.getElementById('phChart').getContext('2d');
-
-                this.tempChart = new Chart(tempCtx, {
-                    type: 'line',
+            initializeSummaryCharts() {
+                const distributionCtx = document.getElementById('conditionDistributionChart').getContext('2d');
+                
+                // FIXED: Enhanced chart dengan warna yang lebih visible
+                this.distributionChart = new Chart(distributionCtx, {
+                    type: 'doughnut',
                     data: {
-                        labels: [],
+                        labels: ['Optimal (70%)', 'Perhatian (25%)', 'Bahaya (5%)'],
                         datasets: [{
-                            label: 'Suhu (°C)',
-                            data: [],
-                            borderColor: 'var(--primary-600)',
-                            backgroundColor: 'rgba(33, 150, 243, 0.15)',
-                            borderWidth: 4,
-                            tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: 'var(--primary-600)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 3,
-                            pointRadius: 6,
-                            pointHoverRadius: 8
+                            data: [70, 25, 5],
+                            backgroundColor: [
+                                '#4caf50', // Hijau - Optimal
+                                '#ffb300', // Kuning - Perhatian  
+                                '#f44336'  // Merah - Bahaya
+                            ],
+                            borderColor: [
+                                '#ffffff',
+                                '#ffffff', 
+                                '#ffffff'
+                            ],
+                            borderWidth: 3,
+                            hoverOffset: 15,
+                            borderRadius: 8
                         }]
                     },
-                    options: this.getChartOptions('Suhu (°C)', 24, 34)
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '55%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: 'var(--text-primary)',
+                                    font: { 
+                                        size: 12,
+                                        family: "'Segoe UI', system-ui, sans-serif",
+                                        weight: '600'
+                                    },
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    pointRadius: 6
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'var(--gray-800)',
+                                titleColor: 'var(--gray-100)',
+                                bodyColor: 'var(--gray-100)',
+                                borderColor: 'var(--primary-500)',
+                                borderWidth: 2,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed;
+                                        return `${label}: ${value}% dari total waktu`;
+                                    }
+                                }
+                            }
+                        },
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true,
+                            duration: 2000
+                        }
+                    }
                 });
+            }
 
-                this.phChart = new Chart(phCtx, {
+            initializeRealTimeCharts() {
+                // Initialize trend chart
+                const trendCtx = document.getElementById('trendChart').getContext('2d');
+                this.trendChart = new Chart(trendCtx, {
                     type: 'line',
                     data: {
                         labels: [],
-                        datasets: [{
-                            label: 'Tingkat pH',
-                            data: [],
-                            borderColor: 'var(--secondary-600)',
-                            backgroundColor: 'rgba(0, 150, 136, 0.15)',
-                            borderWidth: 4,
-                            tension: 0.4,
-                            fill: true,
-                            pointBackgroundColor: 'var(--secondary-600)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 3,
-                            pointRadius: 6,
-                            pointHoverRadius: 8
-                        }]
+                        datasets: [
+                            {
+                                label: 'Suhu (°C)',
+                                data: [],
+                                borderColor: 'var(--primary-500)',
+                                backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'pH',
+                                data: [],
+                                borderColor: 'var(--secondary-500)',
+                                backgroundColor: 'rgba(0, 150, 136, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
                     },
-                    options: this.getChartOptions('Tingkat pH', 6, 9)
+                    options: this.getChartOptions('Nilai', 0, 10)
                 });
             }
 
             initializeHourlyCharts() {
+                // Initialize hourly temperature chart
                 const hourlyTempCtx = document.getElementById('hourlyTempChart').getContext('2d');
-                const hourlyPhCtx = document.getElementById('hourlyPhChart').getContext('2d');
-
                 this.hourlyTempChart = new Chart(hourlyTempCtx, {
                     type: 'bar',
                     data: {
@@ -1371,14 +1412,16 @@
                         datasets: [{
                             label: 'Suhu Rata-rata (°C)',
                             data: [],
-                            backgroundColor: 'rgba(33, 150, 243, 0.6)',
+                            backgroundColor: 'rgba(33, 150, 243, 0.7)',
                             borderColor: 'var(--primary-600)',
-                            borderWidth: 2
+                            borderWidth: 1
                         }]
                     },
-                    options: this.getBarChartOptions('Suhu per Jam (°C)')
+                    options: this.getBarChartOptions('Suhu (°C)')
                 });
 
+                // Initialize hourly pH chart
+                const hourlyPhCtx = document.getElementById('hourlyPhChart').getContext('2d');
                 this.hourlyPhChart = new Chart(hourlyPhCtx, {
                     type: 'bar',
                     data: {
@@ -1386,51 +1429,39 @@
                         datasets: [{
                             label: 'pH Rata-rata',
                             data: [],
-                            backgroundColor: 'rgba(0, 150, 136, 0.6)',
+                            backgroundColor: 'rgba(0, 150, 136, 0.7)',
                             borderColor: 'var(--secondary-600)',
-                            borderWidth: 2
+                            borderWidth: 1
                         }]
                     },
-                    options: this.getBarChartOptions('pH per Jam')
+                    options: this.getBarChartOptions('pH')
                 });
-            }
 
-            initializeSummaryCharts() {
-                const distributionCtx = document.getElementById('conditionDistributionChart').getContext('2d');
-                
-                this.distributionChart = new Chart(distributionCtx, {
-                    type: 'doughnut',
+                // Initialize status distribution chart
+                const statusDistCtx = document.getElementById('statusDistributionChart').getContext('2d');
+                this.statusDistributionChart = new Chart(statusDistCtx, {
+                    type: 'bar',
                     data: {
-                        labels: ['Optimal', 'Perhatian', 'Bahaya'],
-                        datasets: [{
-                            data: [80, 15, 5],
-                            backgroundColor: [
-                                'var(--success-500)',
-                                'var(--warning-500)',
-                                'var(--danger-500)'
-                            ],
-                            borderWidth: 2,
-                            borderColor: '#fff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    color: 'var(--text-primary)',
-                                    font: { size: 12 }
-                                }
+                        labels: [],
+                        datasets: [
+                            {
+                                label: 'Normal',
+                                data: [],
+                                backgroundColor: 'var(--success-500)'
                             },
-                            tooltip: {
-                                backgroundColor: 'var(--gray-800)',
-                                titleColor: 'var(--gray-100)',
-                                bodyColor: 'var(--gray-100)'
+                            {
+                                label: 'Warning',
+                                data: [],
+                                backgroundColor: 'var(--warning-500)'
+                            },
+                            {
+                                label: 'Danger',
+                                data: [],
+                                backgroundColor: 'var(--danger-500)'
                             }
-                        }
-                    }
+                        ]
+                    },
+                    options: this.getBarChartOptions('Jumlah Data')
                 });
             }
 
@@ -1538,54 +1569,49 @@
             }
 
             setupEventListeners() {
-                // Pond buttons
+                // Time tab switching
+                document.querySelectorAll('.time-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        this.switchPeriod(tab.dataset.period);
+                    });
+                });
+
+                // Pond selection
                 document.querySelectorAll('.pond-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        this.currentPond = parseInt(e.target.closest('.pond-btn').dataset.pond);
+                    btn.addEventListener('click', () => {
+                        this.currentPond = parseInt(btn.dataset.pond);
                         this.updatePondSelection();
                         this.generateNewData();
                     });
                 });
 
-                // Time period tabs
-                document.querySelectorAll('.time-tab').forEach(tab => {
-                    tab.addEventListener('click', (e) => {
-                        const period = e.target.dataset.period;
-                        this.switchPeriod(period);
-                    });
-                });
-
                 // Control buttons
-                document.getElementById('refreshBtn').addEventListener('click', () => {
+                document.getElementById('generateDataBtn').addEventListener('click', () => {
                     this.generateNewData();
-                    this.showToast('Data diperbarui secara manual');
-                });
-
-                document.getElementById('demoBtn').addEventListener('click', () => {
-                    this.generateDemoData();
                 });
 
                 document.getElementById('autoRefreshBtn').addEventListener('click', () => {
                     this.toggleAutoRefresh();
+                });
+
+                document.getElementById('demoDataBtn').addEventListener('click', () => {
+                    this.generateDemoData();
                 });
             }
 
             switchPeriod(period) {
                 this.currentPeriod = period;
                 
-                // Update UI
                 document.querySelectorAll('.time-tab').forEach(tab => {
                     tab.classList.remove('active');
                 });
                 document.querySelector(`[data-period="${period}"]`).classList.add('active');
                 
-                // Show/hide dashboards
                 document.querySelectorAll('.dashboard-section').forEach(section => {
                     section.style.display = 'none';
                 });
                 document.getElementById(period + 'Dashboard').style.display = 'block';
                 
-                // Update data for the selected period
                 this.updatePeriodData(period);
             }
 
@@ -1613,7 +1639,6 @@
             }
 
             generateInitialData() {
-                // Generate initial data for all time periods
                 for (let i = 0; i < 50; i++) {
                     setTimeout(() => this.generateNewData(true), i * 100);
                 }
@@ -1626,7 +1651,6 @@
 
                 this.db.insertRecord(this.currentPond, temp, ph, status);
 
-                // Update current period view
                 this.updatePeriodData(this.currentPeriod);
 
                 if (!initial) {
@@ -1650,221 +1674,198 @@
             }
 
             updateRealTimeData() {
-                const recentData = this.db.get15MinuteAnalysis();
-                
-                // Update real-time charts
-                this.updateRealTimeCharts(recentData);
-                
-                // Update metrics
-                if (recentData.length > 0) {
-                    const latest = recentData[0];
-                    this.updateRealTimeMetrics(latest);
-                }
-                
-                // Update table
-                this.updateRealTimeTable(recentData);
-            }
-
-            updateRealTimeCharts(data) {
-                const labels = data.map(d => 
-                    d.timestamp.toLocaleTimeString('id-ID')).reverse();
-                const tempData = data.map(d => d.temperature).reverse();
-                const phData = data.map(d => d.ph).reverse();
-
-                this.tempChart.data.labels = labels;
-                this.tempChart.data.datasets[0].data = tempData;
-                this.tempChart.update('none');
-
-                this.phChart.data.labels = labels;
-                this.phChart.data.datasets[0].data = phData;
-                this.phChart.update('none');
-
-                // Update chart data display
-                this.updateChartDataDisplay(tempData, phData);
-            }
-
-            updateRealTimeMetrics(latest) {
-                document.getElementById('currentTemp').textContent = latest.temperature + '°C';
-                document.getElementById('currentPh').textContent = latest.ph;
+                const data = this.db.get15MinuteAnalysis();
+                this.updateRealTimeCharts(data);
+                this.updateRealTimeMetrics(data[0]);
+                this.updateRealTimeTable(data);
                 
                 // Update stats
                 document.getElementById('totalData').textContent = this.db.stats.total;
-                document.getElementById('normalCount').textContent = this.db.stats.normal;
-                document.getElementById('warningCount').textContent = this.db.stats.warning;
+                document.getElementById('normalStatus').textContent = this.db.stats.normal;
+                document.getElementById('warningStatus').textContent = this.db.stats.warning;
+                document.getElementById('dangerStatus').textContent = this.db.stats.danger;
+            }
+
+            updateRealTimeCharts(data) {
+                const labels = data.map(record => 
+                    record.timestamp.toLocaleTimeString('id-ID', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    })
+                ).reverse();
+
+                const temperatures = data.map(record => record.temperature).reverse();
+                const phValues = data.map(record => record.ph).reverse();
+
+                this.trendChart.data.labels = labels;
+                this.trendChart.data.datasets[0].data = temperatures;
+                this.trendChart.data.datasets[1].data = phValues;
+                this.trendChart.update();
+            }
+
+            updateRealTimeMetrics(latest) {
+                if (latest) {
+                    document.getElementById('currentTemperature').textContent = latest.temperature.toFixed(1) + '°C';
+                    document.getElementById('currentPh').textContent = latest.ph.toFixed(1);
+                    
+                    // Update status indicators
+                    const tempIndicator = document.querySelector('.metric-card:nth-child(1) .status-indicator');
+                    const phIndicator = document.querySelector('.metric-card:nth-child(2) .status-indicator');
+                    
+                    this.updateStatusIndicator(tempIndicator, latest.status);
+                    this.updateStatusIndicator(phIndicator, latest.status);
+                }
+            }
+
+            updateStatusIndicator(indicator, status) {
+                const dot = indicator.querySelector('.status-dot');
+                const text = indicator.querySelector('span');
+                
+                dot.className = 'status-dot';
+                dot.classList.add(`status-${status}`);
+                
+                const statusText = {
+                    normal: 'Kondisi Optimal',
+                    warning: 'Perhatian',
+                    danger: 'Bahaya - Tindakan Diperlukan'
+                };
+                
+                text.textContent = statusText[status];
             }
 
             updateRealTimeTable(data) {
-                const tbody = document.getElementById('dataTableBody');
+                const tbody = document.getElementById('recentDataBody');
                 tbody.innerHTML = '';
-
-                data.forEach(record => {
+                
+                data.slice(0, 10).forEach(record => {
                     const row = document.createElement('tr');
-                    const status = this.evaluateStatus(record.temperature, record.ph);
-                    const badgeClass = `badge-${status}`;
-                    
                     row.innerHTML = `
                         <td>${record.timestamp.toLocaleTimeString('id-ID')}</td>
-                        <td><strong>Tambak ${record.pond}</strong></td>
-                        <td>${record.temperature}°C</td>
-                        <td>${record.ph}</td>
-                        <td><span class="badge ${badgeClass}">${status.toUpperCase()}</span></td>
-                        <td><i class="fas fa-minus trend-stable"></i></td>
-                        <td><span class="badge badge-info">${record.dbAction}</span></td>
+                        <td>${record.temperature.toFixed(1)}°C</td>
+                        <td>${record.ph.toFixed(1)}</td>
+                        <td><span class="badge badge-${record.status}">${record.status.toUpperCase()}</span></td>
                     `;
-                    
                     tbody.appendChild(row);
                 });
             }
 
             updateHourlyAnalysis() {
-                const hourlyData = this.db.getHourlyAnalysis(24);
+                const hourlyData = this.db.getHourlyAnalysis();
                 const hours = Object.keys(hourlyData).reverse();
-                const tempAverages = [];
-                const phAverages = [];
-                const analysisRows = [];
-
-                hours.forEach(hour => {
-                    const data = hourlyData[hour];
-                    if (data.temperatures.length > 0) {
-                        const tempAvg = data.temperatures.reduce((a, b) => a + b, 0) / data.temperatures.length;
-                        const phAvg = data.phValues.reduce((a, b) => a + b, 0) / data.phValues.length;
-                        
-                        tempAverages.push(parseFloat(tempAvg.toFixed(1)));
-                        phAverages.push(parseFloat(phAvg.toFixed(2)));
-                        
-                        const tempStatus = this.evaluateStatus(tempAvg, 7);
-                        const phStatus = this.evaluateStatus(28, phAvg);
-                        const overallStatus = tempStatus === 'danger' || phStatus === 'danger' ? 'danger' :
-                                           tempStatus === 'warning' || phStatus === 'warning' ? 'warning' : 'normal';
-
-                        analysisRows.push({
-                            hour: hour,
-                            tempAvg: tempAvg.toFixed(1),
-                            phAvg: phAvg.toFixed(2),
-                            tempStatus: tempStatus,
-                            phStatus: phStatus,
-                            overallStatus: overallStatus
-                        });
-                    }
+                
+                const tempAverages = hours.map(hour => {
+                    const data = hourlyData[hour].temperatures;
+                    return data.length ? (data.reduce((a, b) => a + b, 0) / data.length).toFixed(1) : 0;
+                });
+                
+                const phAverages = hours.map(hour => {
+                    const data = hourlyData[hour].phValues;
+                    return data.length ? (data.reduce((a, b) => a + b, 0) / data.length).toFixed(1) : 0;
                 });
 
-                // Update hourly charts
+                this.updateHourlyCharts(hours, tempAverages, phAverages, hourlyData);
+                this.updateHourlyMetrics(tempAverages, phAverages);
+                this.updateHourlyTable(hours, hourlyData);
+            }
+
+            updateHourlyCharts(hours, tempAverages, phAverages, hourlyData) {
+                // Update temperature chart
                 this.hourlyTempChart.data.labels = hours;
                 this.hourlyTempChart.data.datasets[0].data = tempAverages;
-                this.hourlyTempChart.update('none');
-
+                this.hourlyTempChart.update();
+                
+                // Update pH chart
                 this.hourlyPhChart.data.labels = hours;
                 this.hourlyPhChart.data.datasets[0].data = phAverages;
-                this.hourlyPhChart.update('none');
-
-                // Update summary metrics
-                this.updateHourlyMetrics(tempAverages, phAverages);
+                this.hourlyPhChart.update();
                 
-                // Update analysis table
-                this.updateHourlyTable(analysisRows);
+                // Update status distribution chart
+                const statusCounts = hours.map(hour => {
+                    const statuses = hourlyData[hour].statuses;
+                    return {
+                        normal: statuses.filter(s => s === 'normal').length,
+                        warning: statuses.filter(s => s === 'warning').length,
+                        danger: statuses.filter(s => s === 'danger').length
+                    };
+                });
+                
+                this.statusDistributionChart.data.labels = hours;
+                this.statusDistributionChart.data.datasets[0].data = statusCounts.map(s => s.normal);
+                this.statusDistributionChart.data.datasets[1].data = statusCounts.map(s => s.warning);
+                this.statusDistributionChart.data.datasets[2].data = statusCounts.map(s => s.danger);
+                this.statusDistributionChart.update();
             }
 
             updateHourlyMetrics(tempAverages, phAverages) {
-                if (tempAverages.length > 0) {
-                    const avgTemp = tempAverages.reduce((a, b) => a + b, 0) / tempAverages.length;
-                    const maxTempFluctuation = Math.max(...tempAverages) - Math.min(...tempAverages);
-                    const optimalTempHours = tempAverages.filter(temp => temp >= 28 && temp <= 30).length;
-
-                    document.getElementById('hourlyAvgTemp').textContent = avgTemp.toFixed(1) + '°C';
-                    document.getElementById('hourlyMaxTempFluctuation').textContent = maxTempFluctuation.toFixed(1) + '°C';
-                    document.getElementById('optimalHoursTemp').textContent = optimalTempHours + '/24';
-                }
-
-                if (phAverages.length > 0) {
-                    const avgPh = phAverages.reduce((a, b) => a + b, 0) / phAverages.length;
-                    const maxPhFluctuation = Math.max(...phAverages) - Math.min(...phAverages);
-                    const optimalPhHours = phAverages.filter(ph => ph >= 6.8 && ph <= 7.8).length;
-
-                    document.getElementById('hourlyAvgPh').textContent = avgPh.toFixed(2);
-                    document.getElementById('hourlyMaxPhFluctuation').textContent = maxPhFluctuation.toFixed(2);
-                    document.getElementById('optimalHoursPh').textContent = optimalPhHours + '/24';
-                }
+                // You can add hourly specific metrics here if needed
             }
 
-            updateHourlyTable(analysisRows) {
-                const tbody = document.getElementById('hourlyAnalysisTable');
+            updateHourlyTable(hours, hourlyData) {
+                const tbody = document.getElementById('hourlyAnalysisBody');
                 tbody.innerHTML = '';
-
-                analysisRows.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${row.hour}</td>
-                        <td>${row.tempAvg}°C</td>
-                        <td>${row.phAvg}</td>
-                        <td><span class="badge badge-${row.tempStatus}">${row.tempStatus.toUpperCase()}</span></td>
-                        <td><span class="badge badge-${row.phStatus}">${row.phStatus.toUpperCase()}</span></td>
-                        <td><span class="badge badge-${row.overallStatus}">${row.overallStatus.toUpperCase()}</span></td>
-                        <td>${this.getHourlyRecommendation(row.tempAvg, row.phAvg, row.overallStatus)}</td>
+                
+                hours.forEach(hour => {
+                    const data = hourlyData[hour];
+                    const avgTemp = data.temperatures.length ? 
+                        (data.temperatures.reduce((a, b) => a + b, 0) / data.temperatures.length).toFixed(1) : 'N/A';
+                    const avgPh = data.phValues.length ? 
+                        (data.phValues.reduce((a, b) => a + b, 0) / data.phValues.length).toFixed(1) : 'N/A';
+                    
+                    // Determine dominant status
+                    const statusCounts = {
+                        normal: data.statuses.filter(s => s === 'normal').length,
+                        warning: data.statuses.filter(s => s === 'warning').length,
+                        danger: data.statuses.filter(s => s === 'danger').length
+                    };
+                    const dominantStatus = Object.keys(statusCounts).reduce((a, b) => 
+                        statusCounts[a] > statusCounts[b] ? a : b
+                    );
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${hour}</td>
+                        <td>${avgTemp}°C</td>
+                        <td>${avgPh}</td>
+                        <td><span class="badge badge-${dominantStatus}">${dominantStatus.toUpperCase()}</span></td>
+                        <td>${data.temperatures.length}</td>
                     `;
-                    tbody.appendChild(tr);
+                    tbody.appendChild(row);
                 });
-            }
-
-            getHourlyRecommendation(temp, ph, status) {
-                if (status === 'danger') return 'Tindakan Segera';
-                if (status === 'warning') return 'Monitor Ketat';
-                return 'Pertahankan';
             }
 
             updateSummaryDashboard() {
                 const stats = this.db.getSummaryStats();
                 
-                // Update current values
-                document.getElementById('currentTempSummary').textContent = stats.currentTemp + '°C';
-                document.getElementById('currentPhSummary').textContent = stats.currentPh;
+                document.getElementById('currentTempSummary').textContent = stats.currentTemp.toFixed(1) + '°C';
+                document.getElementById('currentPhSummary').textContent = stats.currentPh.toFixed(1);
                 document.getElementById('tempDeviation').textContent = (stats.tempDeviation > 0 ? '+' : '') + stats.tempDeviation.toFixed(1) + '°C';
                 document.getElementById('phDeviation').textContent = (stats.phDeviation > 0 ? '+' : '') + stats.phDeviation.toFixed(2);
 
-                // Update distribution chart
+                // Update distribution chart dengan data yang lebih realistis
                 this.updateDistributionChart();
             }
 
             updateDistributionChart() {
-                // Simulate distribution data
-                const distribution = {
-                    optimal: Math.floor(Math.random() * 20) + 70, // 70-90%
-                    warning: Math.floor(Math.random() * 15) + 5,  // 5-20%
-                    danger: Math.floor(Math.random() * 5) + 1     // 1-5%
-                };
+                // Generate data distribusi yang lebih realistis
+                const optimal = Math.floor(Math.random() * 20) + 70; // 70-90%
+                const warning = Math.floor(Math.random() * 15) + 5;  // 5-20%  
+                const danger = Math.floor(Math.random() * 5) + 1;    // 1-5%
 
-                this.distributionChart.data.datasets[0].data = [
-                    distribution.optimal,
-                    distribution.warning,
-                    distribution.danger
+                this.distributionChart.data.datasets[0].data = [optimal, warning, danger];
+                this.distributionChart.data.labels = [
+                    `Optimal (${optimal}%)`, 
+                    `Perhatian (${warning}%)`, 
+                    `Bahaya (${danger}%)`
                 ];
+                
+                // Update colors untuk memastikan tidak hitam
+                this.distributionChart.data.datasets[0].backgroundColor = [
+                    '#4caf50', // Hijau - Optimal
+                    '#ffb300', // Kuning - Perhatian
+                    '#f44336'  // Merah - Bahaya
+                ];
+                
                 this.distributionChart.update('none');
-            }
-
-            updateChartDataDisplay(tempData, phData) {
-                const tempChartData = document.getElementById('tempChartData');
-                const phChartData = document.getElementById('phChartData');
-
-                if (tempData.length > 0) {
-                    tempChartData.innerHTML = `
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                            <div><strong>Terbaru:</strong> ${tempData[tempData.length-1]}°C</div>
-                            <div><strong>Rata-rata:</strong> ${(tempData.reduce((a,b) => a+b, 0)/tempData.length).toFixed(1)}°C</div>
-                            <div><strong>Maks:</strong> ${Math.max(...tempData).toFixed(1)}°C</div>
-                            <div><strong>Min:</strong> ${Math.min(...tempData).toFixed(1)}°C</div>
-                        </div>
-                    `;
-                }
-
-                if (phData.length > 0) {
-                    phChartData.innerHTML = `
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                            <div><strong>Terbaru:</strong> ${phData[phData.length-1]}</div>
-                            <div><strong>Rata-rata:</strong> ${(phData.reduce((a,b) => a+b, 0)/phData.length).toFixed(2)}</div>
-                            <div><strong>Maks:</strong> ${Math.max(...phData).toFixed(2)}</div>
-                            <div><strong>Min:</strong> ${Math.min(...phData).toFixed(2)}</div>
-                        </div>
-                    `;
-                }
             }
 
             generateDemoData() {
