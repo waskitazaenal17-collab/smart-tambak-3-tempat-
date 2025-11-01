@@ -21,9 +21,37 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 
+/* === LOGIN SCREEN === */
+.login-overlay{
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  background:var(--bg); z-index:100; padding:20px;
+}
+.login-box{
+  background:var(--panel); padding:24px; border-radius:var(--card-radius);
+  border:1px solid rgba(255,255,255,0.03); width:100%; max-width:340px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.6);
+}
+.login-box h2{ margin-top:0; text-align:center; }
+.login-input{
+  width:100%; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1);
+  background:rgba(0,0,0,0.2); color:white; font-size:1rem; margin-top:16px;
+}
+.login-btn{
+  width:100%; background:linear-gradient(90deg,var(--accent),#48b3ff); border:none; color:#021022;
+  padding:12px; border-radius:8px; cursor:pointer; font-weight:700; font-size:1rem; margin-top:16px;
+}
+.login-error{ color:var(--accent2); font-size:0.85rem; text-align:center; margin-top:12px; display:none; }
+.login-disclaimer{
+  font-size:0.75rem; color:var(--muted); text-align:center; max-width:340px; margin-top:16px; opacity:0.6;
+}
+
+/* === APP STYLES === */
+#app{ display:none; } /* Mulai tersembunyi */
+
 /* header */
 header{
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px;
   padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.03);
   position:sticky; top:0; z-index:50; background:linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
 }
@@ -47,6 +75,10 @@ nav{width:300px;min-width:240px}
 .btn{background:linear-gradient(90deg,var(--accent),#48b3ff);border:none;color:#021022;padding:9px 12px;border-radius:8px;cursor:pointer;font-weight:700}
 .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px 10px;border-radius:8px;cursor:pointer}
 .ctl{padding:8px 12px;border-radius:8px;border:none;font-weight:700;cursor:pointer}
+.download-link{ /* Link untuk CSV di HP */
+  display:none; background:#12e5a1; color:#021022; padding:9px 12px; border-radius:8px;
+  text-decoration:none; font-weight:700; font-size:0.9rem; text-align:center; margin-top:8px;
+}
 
 /* values */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
@@ -54,20 +86,72 @@ nav{width:300px;min-width:240px}
 .card h3{margin:0;font-size:0.95rem}
 .bigval{font-size:1.6rem;font-weight:700;margin-top:6px}
 
-/* pond visual */
+/* === POND VISUAL (UPDATED) === */
 .pond-visual{display:flex;gap:12px;flex-wrap:wrap}
 .pond-panel{width:420px;max-width:100%}
 .pond-label{font-weight:700;margin-bottom:8px}
-.pond-canvas{position:relative;width:100%;height:300px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.02);background:linear-gradient(180deg,#041522,#021018)}
-.water-container{position:absolute;left:0;right:0;bottom:0;top:0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px}
-.water{width:88%;max-width:360px;height:60%;border-radius:8px;position:relative;overflow:hidden;transition:height 1s ease, background 1s linear;box-shadow:inset 0 8px 40px rgba(0,0,0,0.35)}
-.water-level{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0));transition:height 1s ease}
+
+.pond-canvas{
+  position:relative; width:100%; height:350px; /* Dibuat lebih tinggi */
+  border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.02);
+  background:linear-gradient(180deg,#041522,#021018);
+  display:flex; justify-content:center; align-items:flex-end;
+}
+.water-container{
+  position:absolute; left:0; right:0; bottom:0; top:0;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.water{
+  width:60%; max-width:220px; /* Dibuat lebih ramping (vertikal) */
+  height:90%; /* Mulai dari 90% (diatur oleh JS) */
+  border-radius:8px 8px 0 0; /* Hanya radius atas */
+  position:relative; overflow:hidden;
+  transition:height 1s ease, background 1s linear;
+  box-shadow:inset 0 8px 40px rgba(0,0,0,0.35);
+  border:2px solid rgba(255,255,255,0.05); border-bottom:none;
+}
+.water-level{
+  position:absolute; left:0; right:0; bottom:0;
+  background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0));
+  transition:height 1s ease;
+  height:100%; /* Selalu 100% dari parent .water */
+}
+
+/* === Animasi Ombak (Baru) === */
+.wave{
+  position:absolute; top:-1px; left:0; width:100%; height:20px;
+  background:rgba(255,255,255,0.05);
+}
+.wave::before, .wave::after {
+  content:""; position:absolute; width:200%; height:100%;
+  border-radius:45%; background:inherit;
+  animation:wave-anim 7s linear infinite;
+}
+.wave::before { left:-100%; top:-10px; opacity:0.6; }
+.wave::after { left:-50%; top:-8px; opacity:0.4; animation-delay:-3s; }
+
+@keyframes wave-anim {
+  0% { transform:translateX(0); }
+  100% { transform:translateX(50%); }
+}
+/* === End Wave === */
+
 .surface-heat{position:absolute;left:0;right:0;top:0;height:30%;pointer-events:none;mix-blend-mode:overlay}
 .bubbles{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none;overflow:hidden}
 
 /* bubbles */
 .bubble{position:absolute;border-radius:50%;background:rgba(255,255,255,0.9);opacity:0.85;filter:blur(0.2px);animation:rise linear infinite}
-@keyframes rise{0%{transform:translateY(0) scale(0.6);opacity:0.9}100%{transform:translateY(-260px) scale(1);opacity:0}}
+@keyframes rise{0%{transform:translateY(0) scale(0.6);opacity:0.9}100%{transform:translateY(-320px) scale(1);opacity:0}} /* Disesuaikan dengan tinggi baru */
+
+/* === Keterangan Warna (Baru) === */
+.pond-legend{
+  background:rgba(255,255,255,0.02); border-radius:8px;
+  padding:10px; margin-top:12px; border:1px solid rgba(255,255,255,0.03);
+}
+.pond-legend strong { color: var(--muted); display:block; margin-bottom:6px; font-size:0.8rem; }
+.legend-item{ display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:0.8rem; }
+.legend-color{ width:14px; height:14px; border-radius:3px; }
+/* === End Keterangan === */
 
 /* chart & table */
 .chart-area{margin-top:12px;border-radius:10px;padding:12px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.00))}
@@ -88,6 +172,22 @@ th{color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
+
+<div class="login-overlay" id="loginScreen">
+  <div class="login-box">
+    <h2>Waskita AquaTech</h2>
+    <p class="small" style="text-align:center; margin-top:-10px; color:var(--muted);">Sistem Monitoring Tambak</p>
+    <input type="password" id="passInput" class="login-input" placeholder="Masukkan Kata Sandi">
+    <button id="loginButton" class="login-btn">Akses Dashboard</button>
+    <p class="login-error" id="loginError">Kata sandi salah!</p>
+  </div>
+  <p class="login-disclaimer">
+    <b>Disclaimer:</b> Fitur login ini hanya untuk simulasi dan demonstrasi.
+    Ini tidak aman dan hanya menyembunyikan konten, bukan melindunginya.
+  </p>
+</div>
+
+<div id="app">
 <header>
   <div class="brand">
     <div class="logo">AQ</div>
@@ -100,6 +200,7 @@ th{color:var(--muted);font-weight:600}
   <div style="display:flex;align-items:center;gap:12px">
     <div class="small">Mode: <span id="modeLabel">Simulation</span></div>
     <button id="toggleSim" class="btn-ghost">SIM: ON</button>
+    <button id="logoutButton" class="btn-ghost" style="color:var(--accent2);">Logout</button>
   </div>
 </header>
 
@@ -114,14 +215,23 @@ th{color:var(--muted);font-weight:600}
       </div>
 
       <div class="section-title" style="margin-top:12px">Export & Utility</div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button id="exportCsv" class="btn">Export CSV</button>
-        <button id="resetData" class="btn-ghost">Reset</button>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px">
+        <div style="display:flex; gap:8px;">
+          <button id="exportCsv" class="btn">Export CSV</button>
+          <button id="resetData" class="btn-ghost">Reset Data</button>
+        </div>
+        
+        <a id="downloadLink" class="download-link" href="#" download="data.csv">Klik untuk Unduh CSV</a>
+
+        <div style="display:flex; gap:8px;">
+          <button id="manualSync" class="btn-ghost" style="flex:1">Manual Sync</button>
+          <button id="refreshPage" class="btn-ghost" style="flex:1">Refresh Halaman</button>
+        </div>
       </div>
 
       <div class="section-title" style="margin-top:12px">Info</div>
       <div class="small">Last sync: <span id="lastSync">-</span></div>
-      <div class="login-note">Login saved locally (optional). Username default: <b>zaenal</b></div>
+      <div class="login-note">Login default: <b>zaenal</b> (simulasi).</div>
     </div>
   </nav>
 
@@ -141,16 +251,24 @@ th{color:var(--muted);font-weight:600}
       <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px">
         <div class="pond-panel">
           <div class="pond-label">Visual Kolam</div>
+          
           <div class="pond-canvas">
             <div class="water-container">
-              <div class="water" id="waterBox" style="height:60%;">
-                <div class="water-level" id="waterLevel" style="height:60%"></div>
+              <div class="water" id="waterBox" style="height:90%;"> <div class="wave"></div> <div class="water-level" id="waterLevel" style="height:100%"></div>
                 <div class="surface-heat" id="surfaceHeat"></div>
                 <div class="bubbles" id="bubbles"></div>
               </div>
             </div>
           </div>
 
+          <div class="pond-legend">
+            <strong>Legenda Keterangan</strong>
+            <div class="legend-item"><div class="legend-color" style="background:#0478FF;"></div> Biru Jernih (Kekeruhan Rendah)</div>
+            <div class="legend-item"><div class="legend-color" style="background:#14B48C;"></div> Kehijauan (Kekeruhan Sedang)</div>
+            <div class="legend-item"><div class="legend-color" style="background:#966E2D;"></div> Kecoklatan (Kekeruhan Tinggi)</div>
+            <div class="legend-item"><div class="legend-color" style="background:linear-gradient(90deg, rgba(255,150,80,0.4), rgba(255,100,0,0.8));"></div> Lapisan Oranye (Suhu Hangat)</div>
+          </div>
+          
           <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
             <div class="small">Level: <b id="visLevel">--%</b></div>
             <div class="small">Turbidity: <b id="visTurb">-- NTU</b></div>
@@ -188,11 +306,10 @@ th{color:var(--muted);font-weight:600}
     </div>
   </section>
 </main>
-
-<script>
+</div> <script>
 /* =========================
-   State & Defaults
-   ========================= */
+  State & Defaults
+  ========================= */
 const updateIntervalDefault = 3000;
 let updateInterval = updateIntervalDefault;
 let simMode = true;
@@ -201,7 +318,7 @@ const storageKey = 'sfp_onepond_v2';
 const controlsKey = 'sfp_onepond_controls_v2';
 const defaultState = {
   pondName: 'Tambak Utama',
-  visual: { level:60, turb:30, temp:29.0, ph:7.1, do:6.0 },
+  visual: { level:90, turb:30, temp:29.0, ph:7.1, do:6.0 }, // Level default 90
   history: []  // array of readings
 };
 let state = {};
@@ -210,40 +327,58 @@ let chart = null;
 let windowSize = 20;
 
 /* =========================
-   Helpers
-   ========================= */
+  Helpers
+  ========================= */
 function saveState(){ localStorage.setItem(storageKey, JSON.stringify(state)); }
 function loadState(){ const v = localStorage.getItem(storageKey); if(v) state = JSON.parse(v); else { state = JSON.parse(JSON.stringify(defaultState)); seedInitial(); saveState(); } }
 function saveControls(){ localStorage.setItem(controlsKey, JSON.stringify(controls)); }
 function loadControls(){ const v = localStorage.getItem(controlsKey); if(v) controls = JSON.parse(v); else { controls = {pump:true,aerator:true}; saveControls(); } }
-function nowStr(){ return new Date().toLocaleString(); }
+function nowStr(){ return new Date().toLocaleString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
 
 /* =========================
-   UI Setup
-   ========================= */
-document.getElementById('toggleSim').addEventListener('click', (e)=>{
-  simMode = !simMode;
-  e.target.textContent = 'SIM: ' + (simMode ? 'ON' : 'OFF');
-  document.getElementById('modeLabel').textContent = simMode ? 'Simulation' : 'API';
-});
-document.getElementById('btnPump').addEventListener('click', ()=>{
-  controls.pump = !controls.pump; applyControlsUI(); saveControls(); sendControlMock();
-});
-document.getElementById('btnAer').addEventListener('click', ()=>{
-  controls.aerator = !controls.aerator; applyControlsUI(); saveControls(); sendControlMock();
-});
-document.getElementById('exportCsv').addEventListener('click', exportCSV);
-document.getElementById('resetData').addEventListener('click', ()=>{
-  if(confirm('Reset semua history data?')){ state.history = []; document.querySelector('#logTable tbody').innerHTML=''; drawChart(); saveState(); }
-});
-document.getElementById('btnPause').addEventListener('click', ()=>{
-  paused = !paused; document.getElementById('btnPause').textContent = paused ? 'Resume' : 'Pause';
-});
-document.getElementById('windowSel').addEventListener('change', (e)=>{ windowSize = parseInt(e.target.value); drawChart(); });
+  UI Setup
+  ========================= */
+function setupEventListeners() {
+  document.getElementById('toggleSim').addEventListener('click', (e)=>{
+    simMode = !simMode;
+    e.target.textContent = 'SIM: ' + (simMode ? 'ON' : 'OFF');
+    document.getElementById('modeLabel').textContent = simMode ? 'Simulation' : 'API';
+  });
+  document.getElementById('btnPump').addEventListener('click', ()=>{
+    controls.pump = !controls.pump; applyControlsUI(); saveControls(); sendControlMock();
+  });
+  document.getElementById('btnAer').addEventListener('click', ()=>{
+    controls.aerator = !controls.aerator; applyControlsUI(); saveControls(); sendControlMock();
+  });
+  
+  // Tombol Export CSV (Diperbarui)
+  document.getElementById('exportCsv').addEventListener('click', exportCSV);
+  
+  // Tombol Reset Data
+  document.getElementById('resetData').addEventListener('click', ()=>{
+    if(confirm('Reset semua history data?')){ state.history = []; document.querySelector('#logTable tbody').innerHTML=''; drawChart(); saveState(); }
+  });
+  
+  // Tombol Refresh/Sync (Baru)
+  document.getElementById('manualSync').addEventListener('click', step);
+  document.getElementById('refreshPage').addEventListener('click', () => location.reload());
+  
+  document.getElementById('btnPause').addEventListener('click', ()=>{
+    paused = !paused; document.getElementById('btnPause').textContent = paused ? 'Resume' : 'Pause';
+  });
+  document.getElementById('windowSel').addEventListener('change', (e)=>{ windowSize = parseInt(e.target.value); drawChart(); });
+  
+  // Tombol Logout (Baru)
+  document.getElementById('logoutButton').addEventListener('click', () => {
+    if (confirm('Anda yakin ingin logout?')) {
+      location.reload(); // Cukup reload, login screen akan muncul
+    }
+  });
+}
 
 /* =========================
-   Visual update logic
-   ========================= */
+  Visual update logic
+  ========================= */
 function applyControlsUI(){
   const p = document.getElementById('btnPump'); const a = document.getElementById('btnAer');
   p.textContent = 'Pompa: ' + (controls.pump ? 'ON' : 'OFF'); p.style.background = controls.pump ? '#12e5a1' : '#ff6b6b';
@@ -253,10 +388,12 @@ function updateVisualsFromReading(reading){
   // update visual snapshots
   const vis = { level: reading.level, turb: reading.turb, temp: reading.temp, ph: reading.ph, do: reading.do };
   state.visual = vis;
-  // water level UI
+  
+  // water level UI (min 6%, max 100%)
   const levelPct = Math.max(6, Math.min(100, vis.level));
   document.getElementById('waterBox').style.height = (levelPct) + '%';
-  document.getElementById('waterLevel').style.height = (levelPct) + '%';
+  
+  // Perbarui teks
   document.getElementById('visLevel').textContent = levelPct.toFixed(0) + '%';
   document.getElementById('visTurb').textContent = vis.turb.toFixed(1) + ' NTU';
   document.getElementById('visTemp').textContent = vis.temp.toFixed(1) + ' °C';
@@ -266,9 +403,9 @@ function updateVisualsFromReading(reading){
   // compute water color based on turbidity
   let turb = vis.turb;
   let turbColor;
-  if(turb <= 30) turbColor = {r:4,g:120,b:255};       // clear blue
-  else if(turb <= 60) turbColor = {r:20,g:180,b:140}; // greenish
-  else turbColor = {r:150,g:110,b:45};               // brownish
+  if(turb <= 25) turbColor = {r:4,g:120,b:255};      // clear blue (#0478FF)
+  else if(turb <= 50) turbColor = {r:20,g:180,b:140}; // greenish (#14B48C)
+  else turbColor = {r:150,g:110,b:45};               // brownish (#966E2D)
 
   // temp mix (warmer -> orange tint)
   let tempFactor = (vis.temp - 20) / 15; tempFactor = Math.max(0, Math.min(1, tempFactor));
@@ -307,8 +444,8 @@ function generateBubbles(doVal, phVal){
 }
 
 /* =========================
-   Chart & Logging
-   ========================= */
+  Chart & Logging
+  ========================= */
 function initChart(){
   const ctx = document.getElementById('chartMain').getContext('2d');
   chart = new Chart(ctx, {
@@ -330,7 +467,7 @@ function initChart(){
   });
 }
 function drawChart(){
-  if(!chart) initChart();
+  if(!chart) return; // Jangan gambar jika chart belum siap
   const labels = state.history.slice(-windowSize).map(s=>s.time);
   const temps = state.history.slice(-windowSize).map(s=>s.temp);
   const phs = state.history.slice(-windowSize).map(s=>s.ph);
@@ -345,11 +482,11 @@ function appendLogRow(r){
 }
 
 /* =========================
-   Simulation / Data ingestion
-   ========================= */
+  Simulation / Data ingestion
+  ========================= */
 function seedInitial(){
   for(let i=0;i<12;i++){
-    const base = {nominalTemp:29, nominalPH:7.1, nominalDO:6.0, nominalTurb:30, nominalLevel:60};
+    const base = {nominalTemp:29, nominalPH:7.1, nominalDO:6.0, nominalTurb:30, nominalLevel:90}; // Level 90
     const r = makeReading(Object.assign({id:1}, base));
     state.history.push(r);
   }
@@ -359,7 +496,8 @@ function makeReading(base){
   const ph = +(base.nominalPH + (Math.random()-0.5)*0.12).toFixed(2);
   const doV = +(base.nominalDO + (Math.random()-0.5)*0.4).toFixed(2);
   const turb = +(base.nominalTurb + (Math.random()-0.5)*3).toFixed(1);
-  const level = Math.max(6, Math.min(100, +(base.nominalLevel + (Math.random()-0.5)*4).toFixed(1)));
+  // Logika Level BARU: Fluktuasi antara 85% dan 95%
+  const level = Math.max(85, Math.min(95, +(base.nominalLevel + (Math.random()-0.5)*10).toFixed(1)));
   return { time: nowStr(), temp, ph, do: doV, turb, level };
 }
 function step(){
@@ -381,8 +519,8 @@ function step(){
 }
 
 /* =========================
-   Value cards & overall status
-   ========================= */
+  Value cards & overall status
+  ========================= */
 function updateValueCards(latest){
   document.getElementById('valTemp').textContent = latest.temp.toFixed(2) + ' °C';
   document.getElementById('valPH').textContent = latest.ph.toFixed(2);
@@ -407,35 +545,51 @@ function updateOverallBadge(){
 }
 
 /* =========================
-   Mock send control (API-ready)
-   ========================= */
+  Mock send control (API-ready)
+  ========================= */
 function sendControlMock(){
   // replace with real fetch POST to /api/control if you have backend
   console.log('Send control (mock):', controls);
 }
 
 /* =========================
-   CSV Export
-   ========================= */
+  CSV Export (Diperbarui untuk HP)
+  ========================= */
 function exportCSV(){
   const rows=[['time','temp','ph','do','turbidity','level']];
   state.history.forEach(h => rows.push([h.time, h.temp.toFixed(2), h.ph.toFixed(2), h.do.toFixed(2), h.turb.toFixed(1), h.level.toFixed(1)]));
   const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'tambak_data_'+(new Date().toISOString().slice(0,10))+'.csv'; a.click(); URL.revokeObjectURL(url);
+  
+  // (BARU) Tampilkan link download, jangan klik otomatis
+  const a = document.getElementById('downloadLink');
+  a.href = url;
+  a.download = 'tambak_data_'+(new Date().toISOString().slice(0,10))+'.csv';
+  a.textContent = 'Klik DI SINI untuk Unduh CSV';
+  a.style.display = 'block';
+  
+  // (BARU) Sembunyikan link setelah beberapa detik
+  setTimeout(() => {
+    a.style.display = 'none';
+    URL.revokeObjectURL(url); // Hapus blob url
+  }, 10000); // Sembunyikan setelah 10 detik
 }
 
 /* =========================
-   Init & loop
-   ========================= */
-function start(){
+  Init & loop
+  ========================= */
+function startApp(){
   loadState(); loadControls(); applyControlsUI();
+  setupEventListeners(); // Pindahkan event listeners ke sini
   document.getElementById('pondName').textContent = state.pondName;
   // populate UI from latest reading or visual
   if(state.history.length){
     const last = state.history[state.history.length-1];
-    updateValueCards(last); updateVisualsFromReading(last); state.history.forEach(h=>appendLogRow(h));
+    updateValueCards(last); updateVisualsFromReading(last); 
+    // Hapus log lama sebelum mengisi ulang
+    document.querySelector('#logTable tbody').innerHTML = '';
+    state.history.forEach(h=>appendLogRow(h));
   } else {
     seedInitial();
     state.history.forEach(h=>appendLogRow(h));
@@ -446,7 +600,42 @@ function start(){
   // loop
   setInterval(step, updateIntervalDefault);
 }
-window.addEventListener('load', start);
+
+/* =========================
+  LOGIN SCRIPT (BARU)
+  ========================= */
+window.addEventListener('load', () => {
+  const KATA_SANDI = "tambak123"; // <-- UBAH KATA SANDI DI SINI
+  
+  const loginScreen = document.getElementById('loginScreen');
+  const appScreen = document.getElementById('app');
+  const passInput = document.getElementById('passInput');
+  const loginButton = document.getElementById('loginButton');
+  const loginError = document.getElementById('loginError');
+
+  function attemptLogin() {
+    if (passInput.value === KATA_SANDI) {
+      // Berhasil
+      loginScreen.style.display = 'none';
+      appScreen.style.display = 'block';
+      startApp(); // Mulai aplikasi setelah login
+    } else {
+      // Gagal
+      loginError.style.display = 'block';
+    }
+  }
+  
+  // Event listener untuk tombol
+  loginButton.addEventListener('click', attemptLogin);
+  
+  // Event listener untuk tekan 'Enter' di input
+  passInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      attemptLogin();
+    }
+  });
+});
+
 </script>
 </body>
 </html>
