@@ -1,720 +1,1178 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <title>AquaSense Pro - Monitoring Tambak Cerdas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaSense Pro - Monitoring 3 Tambak</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* === COLOR PALETTE - TEMA BIRU HARMONIS === */
+        :root {
+            /* Primary Blues - Warna brand utama */
+            --primary-50: #e3f2fd;
+            --primary-100: #bbdefb;
+            --primary-200: #90caf9;
+            --primary-300: #64b5f6;
+            --primary-400: #42a5f5;
+            --primary-500: #2196f3;  /* Primary Utama */
+            --primary-600: #1e88e5;
+            --primary-700: #1976d2;
+            --primary-800: #1565c0;
+            --primary-900: #0d47a1;
+            
+            /* Secondary Teals - Warna pendamping */
+            --secondary-50: #e0f2f1;
+            --secondary-100: #b2dfdb;
+            --secondary-200: #80cbc4;
+            --secondary-300: #4db6ac;
+            --secondary-400: #26a69a;
+            --secondary-500: #009688;  /* Secondary Utama */
+            --secondary-600: #00897b;
+            --secondary-700: #00796b;
+            --secondary-800: #00695c;
+            --secondary-900: #004d40;
+            
+            /* Status Colors - Harmonis */
+            --success-400: #66bb6a;
+            --success-500: #4caf50;
+            --success-600: #43a047;
+            
+            --warning-400: #ffca28;
+            --warning-500: #ffb300;
+            --warning-600: #ffa000;
+            
+            --danger-400: #ef5350;
+            --danger-500: #f44336;
+            --danger-600: #e53935;
+            
+            /* Neutral Grays - Untuk text dan background */
+            --gray-50: #fafafa;
+            --gray-100: #f5f5f5;
+            --gray-200: #eeeeee;
+            --gray-300: #e0e0e0;
+            --gray-400: #bdbdbd;
+            --gray-500: #9e9e9e;
+            --gray-600: #757575;
+            --gray-700: #616161;
+            --gray-800: #424242;
+            --gray-900: #212121;
+            
+            /* Semantic Variables */
+            --bg-primary: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+            --bg-card: rgba(255, 255, 255, 0.98);
+            --bg-glass: rgba(255, 255, 255, 0.92);
+            --text-primary: var(--gray-900);
+            --text-secondary: var(--gray-700);
+            --text-muted: var(--gray-600);
+            --border-light: rgba(33, 150, 243, 0.15);
+            --border-medium: rgba(33, 150, 243, 0.3);
+            --shadow-soft: 0 8px 32px rgba(33, 150, 243, 0.12);
+            --shadow-medium: 0 12px 40px rgba(33, 150, 243, 0.18);
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
-        :root {
-            --primary: #2196f3;
-            --primary-dark: #1976d2;
-            --secondary: #009688;
-            --success: #4caf50;
-            --warning: #ffb300;
-            --danger: #f44336;
-            --light: #f5f5f5;
-            --dark: #212121;
-            --gray: #757575;
-            --tambak1: #2196f3;
-            --tambak2: #009688;
-            --tambak3: #ff9800;
-        }
-
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
             min-height: 100vh;
-            padding: 20px;
-            color: var(--dark);
+            padding: 24px;
+            color: var(--text-primary);
+            line-height: 1.6;
         }
-
+        
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
-
+        
+        /* === HEADER STYLES === */
         .header {
             text-align: center;
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.15);
-            margin-bottom: 30px;
-            border-left: 5px solid var(--primary);
+            margin-bottom: 32px;
+            background: var(--bg-glass);
+            padding: 32px 40px;
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
         }
-
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-400), var(--secondary-400));
+        }
+        
         .header h1 {
-            color: var(--primary);
-            margin-bottom: 10px;
-            font-size: 2.5em;
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .countdown-timer {
+            background: var(--primary-50);
+            color: var(--primary-700);
+            padding: 12px 24px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            border: 1px solid var(--primary-200);
+            font-size: 0.95em;
         }
 
-        .tabs {
+        /* === TIME SELECTION TABS === */
+        .time-tabs {
             display: flex;
-            background: white;
-            border-radius: 15px;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: var(--bg-glass);
             padding: 8px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
         }
-
-        .tab {
+        
+        .time-tab {
             flex: 1;
-            padding: 15px;
-            text-align: center;
-            background: transparent;
+            padding: 12px 16px;
             border: none;
-            border-radius: 10px;
+            background: transparent;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
-            color: var(--gray);
+            color: var(--text-secondary);
             transition: all 0.3s ease;
         }
-
-        .tab.active {
-            background: var(--primary);
+        
+        .time-tab.active {
+            background: var(--primary-500);
             color: white;
             box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
         }
-
-        .pond-selector {
+        
+        .time-tab:hover:not(.active) {
+            background: var(--primary-50);
+            color: var(--primary-700);
+        }
+        
+        /* === STATS BAR === */
+        .stats-bar {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
         }
-
-        .pond-btn {
+        
+        .stat-card {
+            background: var(--bg-card);
             padding: 20px;
-            border: none;
-            border-radius: 15px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            border-radius: 16px;
             text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-left: 4px solid var(--tambak1);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s ease;
         }
-
-        .pond-btn.active {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-medium);
         }
-
-        .pond-btn.tambak1.active { border-left-color: var(--tambak1); background: #e3f2fd; }
-        .pond-btn.tambak2.active { border-left-color: var(--tambak2); background: #e0f2f1; }
-        .pond-btn.tambak3.active { border-left-color: var(--tambak3); background: #fff3e0; }
-
-        .pond-btn .pond-name {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 5px;
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            margin: 8px 0;
+            color: var(--primary-700);
         }
-
-        .pond-btn .pond-status {
+        
+        .stat-label {
             font-size: 0.9em;
-            color: var(--gray);
+            color: var(--text-muted);
+            font-weight: 500;
         }
-
+        
+        /* === MAIN DASHBOARD LAYOUT === */
         .dashboard {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin-bottom: 25px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
         }
-
+        
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
             }
-            .pond-selector {
-                grid-template-columns: 1fr;
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
-
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            border-left: 4px solid var(--primary);
+        
+        /* === SUMMARY DASHBOARD === */
+        .summary-dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
         }
-
-        .card h3 {
-            color: var(--primary);
+        
+        .summary-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 28px;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-soft);
+        }
+        
+        .summary-card h3 {
             margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.3em;
+            gap: 12px;
         }
-
-        .metric-card {
-            background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
-            text-align: center;
-            border-left: 4px solid var(--secondary);
+        
+        .summary-card h3 i {
+            color: var(--primary-500);
         }
-
-        .metric-value {
-            font-size: 3em;
-            font-weight: bold;
-            color: var(--primary);
-            margin: 15px 0;
-        }
-
-        .metric-label {
-            color: var(--gray);
-            font-size: 1.1em;
-            margin-bottom: 10px;
-        }
-
-        .status {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
+        
+        /* === CARD STYLES === */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
             border-radius: 20px;
-            background: var(--light);
-            margin-top: 10px;
+            padding: 28px;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-400), var(--secondary-400));
+        }
+        
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--border-medium);
+        }
+        
+        .card h3 {
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .card h3 i {
+            color: var(--primary-500);
+        }
+        
+        /* === METRIC CARDS === */
+        .metric-card {
+            background: linear-gradient(135deg, var(--primary-50), var(--secondary-50));
+            border: 1px solid var(--primary-200);
+        }
+        
+        .metric-card::before {
+            background: linear-gradient(90deg, var(--primary-500), var(--secondary-500));
+        }
+        
+        .metric-value {
+            font-size: 3.2em;
+            font-weight: 800;
+            margin: 16px 0;
+            color: var(--primary-800);
+            font-family: 'SF Pro Display', -apple-system, sans-serif;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .metric-label {
+            font-size: 1.1em;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
             font-weight: 500;
         }
-
+        
+        /* === STATUS INDICATORS === */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 20px;
+            background: var(--bg-glass);
+            margin: 12px 0;
+            border: 1px solid var(--border-light);
+            font-weight: 500;
+        }
+        
         .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
-
-        .status-normal { background: var(--success); }
-        .status-warning { background: var(--warning); }
-        .status-danger { background: var(--danger); }
-
+        
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
         }
-
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 25px;
+        
+        .status-normal { 
+            background: var(--success-500);
+            box-shadow: 0 0 0 2px var(--success-100);
         }
-
+        
+        .status-warning { 
+            background: var(--warning-500);
+            box-shadow: 0 0 0 2px var(--warning-100);
+        }
+        
+        .status-danger { 
+            background: var(--danger-500);
+            box-shadow: 0 0 0 2px var(--danger-100);
+            animation: pulse 1s infinite;
+        }
+        
+        /* === BUTTON STYLES === */
         .btn {
-            padding: 15px 25px;
+            background: var(--primary-500);
             border: none;
-            border-radius: 12px;
-            font-size: 1em;
-            font-weight: 600;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 14px;
+            font-size: 0.95em;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
+            justify-content: center;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
         }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-info {
-            background: var(--secondary);
-            color: white;
-        }
-
+        
         .btn:hover {
+            background: var(--primary-600);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-success {
+            background: var(--success-500);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-success:hover {
+            background: var(--success-600);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-warning {
+            background: var(--warning-500);
+            box-shadow: 0 4px 12px rgba(255, 179, 0, 0.3);
+        }
+        
+        .btn-warning:hover {
+            background: var(--warning-600);
+            box-shadow: 0 6px 20px rgba(255, 179, 0, 0.4);
+        }
+        
+        /* === CHART CONTAINERS - IMPROVED === */
         .chart-container {
-            height: 300px;
+            height: 280px;
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .mini-chart-container {
+            height: 180px;
+            margin-top: 15px;
+        }
+        
+        /* === SUMMARY GRID === */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
             margin-top: 20px;
         }
-
+        
+        .summary-item {
+            background: var(--primary-50);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--primary-100);
+        }
+        
+        .summary-item .label {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .summary-item .value {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--primary-700);
+        }
+        
+        .summary-item .trend {
+            font-size: 0.8em;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .trend-up { color: var(--danger-500); }
+        .trend-down { color: var(--success-500); }
+        .trend-stable { color: var(--primary-500); }
+        
+        /* === ANALYSIS TABLE === */
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 0.9em;
+        }
+        
+        .analysis-table th,
+        .analysis-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .analysis-table th {
+            background: var(--primary-50);
+            font-weight: 600;
+            color: var(--primary-700);
+        }
+        
+        .analysis-table tr:hover {
+            background: var(--primary-50);
+        }
+        
+        /* === CONTROL STYLES === */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .pond-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        
+        .pond-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            padding: 18px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        .pond-btn.active {
+            background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+            color: white;
+            border-color: var(--primary-400);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.3);
+        }
+        
+        .pond-btn:hover:not(.active) {
+            background: var(--primary-50);
+            border-color: var(--primary-300);
+            transform: translateY(-2px);
+        }
+        
+        /* === TABLE STYLES === */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 20px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
         }
-
+        
         .data-table th,
         .data-table td {
-            padding: 12px 15px;
+            padding: 16px 20px;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--border-light);
         }
-
+        
         .data-table th {
-            background: var(--light);
-            color: var(--primary);
+            background: var(--primary-50);
             font-weight: 600;
+            color: var(--primary-700);
+            font-size: 0.95em;
         }
-
+        
+        .data-table tr:hover {
+            background: var(--primary-50);
+        }
+        
+        /* === BADGE STYLES === */
         .badge {
-            padding: 5px 12px;
-            border-radius: 15px;
+            padding: 6px 14px;
+            border-radius: 16px;
             font-size: 0.8em;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid;
         }
-
-        .badge-success { background: #e8f5e8; color: var(--success); }
-        .badge-warning { background: #fff8e1; color: var(--warning); }
-        .badge-danger { background: #ffebee; color: var(--danger); }
-        .badge-tambak1 { background: #e3f2fd; color: var(--tambak1); }
-        .badge-tambak2 { background: #e0f2f1; color: var(--tambak2); }
-        .badge-tambak3 { background: #fff3e0; color: var(--tambak3); }
-
-        .log-container {
-            max-height: 200px;
-            overflow-y: auto;
-            background: #fafafa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            border: 1px solid #eee;
+        
+        .badge-success { 
+            background: var(--success-50);
+            color: var(--success-700);
+            border-color: var(--success-200);
         }
-
-        .log-entry {
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            background: white;
-            border-radius: 8px;
-            border-left: 4px solid var(--primary);
-            font-size: 0.9em;
+        
+        .badge-warning { 
+            background: var(--warning-50);
+            color: var(--warning-700);
+            border-color: var(--warning-200);
         }
-
-        .notification-settings {
-            background: #f8fdff;
-            padding: 20px;
-            border-radius: 15px;
-            border: 2px dashed #e3f2fd;
-            margin-top: 20px;
+        
+        .badge-danger { 
+            background: var(--danger-50);
+            color: var(--danger-700);
+            border-color: var(--danger-200);
         }
-
-        .setting-item {
-            margin-bottom: 15px;
+        
+        .badge-info { 
+            background: var(--primary-50);
+            color: var(--primary-700);
+            border-color: var(--primary-200);
         }
-
-        .setting-item label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .setting-item input, .setting-item textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .whatsapp-demo {
-            background: #25D366;
+        
+        /* === ALERT & NOTIFICATION STYLES === */
+        .alert-banner {
+            background: linear-gradient(135deg, var(--danger-400), var(--danger-500));
             color: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 15px;
+            padding: 20px 28px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            display: none;
+            animation: slideDown 0.5s ease;
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.2);
+            border-left: 4px solid var(--danger-600);
         }
-
-        .api-status {
+        
+        .alert-banner.warning {
+            background: linear-gradient(135deg, var(--warning-400), var(--warning-500));
+            border-left-color: var(--warning-600);
+        }
+        
+        .alert-banner.info {
+            background: linear-gradient(135deg, var(--primary-400), var(--primary-500));
+            border-left-color: var(--primary-600);
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* === THRESHOLD INFO BOXES === */
+        .threshold-info {
+            background: var(--primary-50);
+            padding: 18px;
+            border-radius: 14px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            border: 1px solid var(--primary-100);
+        }
+        
+        .threshold-info strong {
+            color: var(--primary-700);
+        }
+        
+        /* === DATABASE LOG STYLES === */
+        .database-log {
+            background: var(--gray-50);
+            padding: 18px;
+            border-radius: 14px;
+            margin-top: 16px;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 0.85em;
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid var(--border-light);
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 10px 14px;
+            border-left: 4px solid var(--success-400);
+            background: white;
+            border-radius: 0 10px 10px 0;
+            animation: fadeIn 0.4s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .log-entry.warning { border-left-color: var(--warning-400); }
+        .log-entry.danger { border-left-color: var(--danger-400); }
+        .log-entry.info { border-left-color: var(--primary-400); }
+        
+        /* === AI RECOMMENDATION STYLES === */
+        .ai-recommendation {
+            background: linear-gradient(135deg, var(--primary-100), var(--secondary-100));
+            padding: 22px;
+            border-radius: 16px;
+            margin-top: 20px;
+            display: none;
+            animation: slideUp 0.5s ease;
+            border: 1px solid var(--primary-200);
+            box-shadow: var(--shadow-soft);
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .recommendation-title {
+            font-weight: 700;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 10px;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 8px;
-            background: #f8f9fa;
-        }
-
-        .status-online { border-left: 4px solid var(--success); }
-        .status-offline { border-left: 4px solid var(--danger); }
-
-        .daily-controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .summary-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .summary-value {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: var(--primary);
-            margin: 5px 0;
-        }
-
-        .summary-label {
-            color: var(--gray);
-            font-size: 0.9em;
-        }
-
-        .pond-overview {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .pond-mini-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-left: 4px solid var(--tambak1);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .pond-mini-card.tambak1 { border-left-color: var(--tambak1); }
-        .pond-mini-card.tambak2 { border-left-color: var(--tambak2); }
-        .pond-mini-card.tambak3 { border-left-color: var(--tambak3); }
-
-        .pond-mini-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .pond-mini-card.active {
-            background: #e3f2fd;
-        }
-
-        .pond-mini-card .pond-name {
+            color: var(--primary-700);
             font-size: 1.1em;
-            font-weight: bold;
-            margin-bottom: 10px;
         }
-
-        .pond-mini-card .pond-metric {
-            font-size: 1.8em;
-            font-weight: bold;
-            margin: 5px 0;
+        
+        /* === TOAST NOTIFICATION === */
+        .notification-toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: var(--success-500);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 14px;
+            box-shadow: var(--shadow-medium);
+            display: none;
+            z-index: 1000;
+            animation: slideInRight 0.5s ease;
+            backdrop-filter: blur(10px);
         }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* === TREND INDICATORS === */
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 8px;
+            font-size: 0.85em;
+        }
+        
+        .trend-up { color: var(--danger-500); }
+        .trend-down { color: var(--success-500); }
+        .trend-stable { color: var(--primary-500); }
 
-        .pond-mini-card .pond-status {
+        /* === TIME PERIOD INDICATOR === */
+        .period-indicator {
+            background: var(--primary-100);
+            padding: 8px 16px;
+            border-radius: 12px;
             font-size: 0.9em;
+            color: var(--primary-700);
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        /* === DISTRIBUTION CHART FIX === */
+        .distribution-chart-container {
+            height: 250px;
+            margin-top: 20px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        /* === RECOMMENDATION STYLES === */
+        .recommendation-content {
+            margin-top: 12px;
+        }
+
+        .recommendation-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            font-size: 0.95em;
+        }
+
+        .recommendation-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-container {
+            background: var(--primary-50);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--primary-100);
+        }
+
+        /* Ensure chart background is transparent */
+        .chartjs-render-monitor {
+            background: transparent !important;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Notification Toast -->
+        <div class="notification-toast" id="notificationToast">
+            <i class="fas fa-check-circle"></i>
+            <span id="toastMessage">Operasi Berhasil</span>
+        </div>
+
+        <!-- Header -->
         <div class="header">
             <h1><i class="fas fa-water"></i> AquaSense Pro</h1>
-            <p>Sistem Monitoring 3 Tambak dengan Notifikasi WhatsApp</p>
-        </div>
-
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('realtime')">
-                <i class="fas fa-clock"></i> Real-time
-            </button>
-            <button class="tab" onclick="switchTab('daily')">
-                <i class="fas fa-calendar-day"></i> Harian
-            </button>
-            <button class="tab" onclick="switchTab('notifications')">
-                <i class="fas fa-bell"></i> Notifikasi
-            </button>
-        </div>
-
-        <!-- Overview 3 Tambak -->
-        <div class="pond-overview">
-            <div class="pond-mini-card tambak1 active" onclick="selectPond(1)">
-                <div class="pond-name">Tambak 1 - Udang Vaname</div>
-                <div class="pond-metric" id="overview-temp-1">28.5°C</div>
-                <div class="pond-metric" id="overview-ph-1">7.2</div>
-                <div class="pond-status" id="overview-status-1">
-                    <span class="badge badge-success">OPTIMAL</span>
-                </div>
-            </div>
-            <div class="pond-mini-card tambak2" onclick="selectPond(2)">
-                <div class="pond-name">Tambak 2 - Bandeng</div>
-                <div class="pond-metric" id="overview-temp-2">29.1°C</div>
-                <div class="pond-metric" id="overview-ph-2">7.4</div>
-                <div class="pond-status" id="overview-status-2">
-                    <span class="badge badge-success">OPTIMAL</span>
-                </div>
-            </div>
-            <div class="pond-mini-card tambak3" onclick="selectPond(3)">
-                <div class="pond-name">Tambak 3 - Nila</div>
-                <div class="pond-metric" id="overview-temp-3">27.8°C</div>
-                <div class="pond-metric" id="overview-ph-3">7.0</div>
-                <div class="pond-status" id="overview-status-3">
-                    <span class="badge badge-warning">PERHATIAN</span>
-                </div>
+            <div class="subtitle">Sistem Monitoring Tambak Cerdas Berbasis IoT dengan Analitik Prediktif</div>
+            <div class="countdown-timer">
+                <i class="fas fa-sync-alt fa-spin"></i>
+                Auto-Refresh: <span id="countdown">15</span> detik
             </div>
         </div>
 
-        <!-- Real-time Dashboard -->
-        <div id="realtime-tab">
-            <div class="pond-selector">
-                <button class="pond-btn tambak1 active" onclick="selectPond(1)">
-                    <div class="pond-name">Tambak 1 - Udang Vaname</div>
-                    <div class="pond-status">Luas: 1000m² | Kapasitas: 10,000 ekor</div>
-                </button>
-                <button class="pond-btn tambak2" onclick="selectPond(2)">
-                    <div class="pond-name">Tambak 2 - Bandeng</div>
-                    <div class="pond-status">Luas: 800m² | Kapasitas: 5,000 ekor</div>
-                </button>
-                <button class="pond-btn tambak3" onclick="selectPond(3)">
-                    <div class="pond-name">Tambak 3 - Nila</div>
-                    <div class="pond-status">Luas: 600m² | Kapasitas: 8,000 ekor</div>
-                </button>
-            </div>
+        <!-- Time Selection Tabs -->
+        <div class="time-tabs">
+            <button class="time-tab active" data-period="realtime">Real-time (15 Menit)</button>
+            <button class="time-tab" data-period="hourly">Analisis Per Jam</button>
+            <button class="time-tab" data-period="summary">Dashboard Rangkuman</button>
+        </div>
 
-            <div class="dashboard">
-                <div class="card metric-card">
-                    <h3><i class="fas fa-thermometer-half"></i> Suhu Saat Ini</h3>
-                    <div class="metric-value" id="current-temp">28.5°C</div>
-                    <div class="metric-label" id="current-pond">Tambak 1 - Udang Vaname</div>
-                    <div class="status">
-                        <div class="status-dot status-normal"></div>
-                        <span>Kondisi Optimal</span>
-                    </div>
+        <!-- Real-time Dashboard (Default) -->
+        <div id="realtimeDashboard" class="dashboard-section">
+            <!-- Stats Bar -->
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-label">Total Data</div>
+                    <div class="stat-value" id="totalData">0</div>
                 </div>
-
-                <div class="card metric-card">
-                    <h3><i class="fas fa-tint"></i> pH Saat Ini</h3>
-                    <div class="metric-value" id="current-ph">7.2</div>
-                    <div class="metric-label" id="current-pond-ph">Tambak 1 - Udang Vaname</div>
-                    <div class="status">
-                        <div class="status-dot status-normal"></div>
-                        <span>Kondisi Optimal</span>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-label">Status Normal</div>
+                    <div class="stat-value" id="normalStatus">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Status Warning</div>
+                    <div class="stat-value" id="warningStatus">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Status Danger</div>
+                    <div class="stat-value" id="dangerStatus">0</div>
                 </div>
             </div>
 
+            <!-- Pond Selection -->
+            <div class="pond-buttons">
+                <button class="pond-btn active" data-pond="1">Tambak 1</button>
+                <button class="pond-btn" data-pond="2">Tambak 2</button>
+                <button class="pond-btn" data-pond="3">Tambak 3</button>
+            </div>
+
+            <!-- Controls -->
             <div class="controls">
-                <button class="btn btn-primary" onclick="generateNormalData()">
-                    <i class="fas fa-check"></i> Data Normal
+                <button class="btn" id="generateDataBtn">
+                    <i class="fas fa-plus"></i> Generate Data Baru
                 </button>
-                <button class="btn btn-warning" onclick="generateWarningData()">
-                    <i class="fas fa-exclamation-triangle"></i> Data Warning
+                <button class="btn btn-success" id="autoRefreshBtn">
+                    <i class="fas fa-play"></i> Mulai Auto-Refresh
                 </button>
-                <button class="btn btn-danger" onclick="generateDangerData()">
-                    <i class="fas fa-skull-crossbones"></i> Data Danger
-                </button>
-                <button class="btn btn-success" id="auto-refresh-btn" onclick="toggleAutoRefresh()">
-                    <i class="fas fa-play"></i> Auto Refresh
+                <button class="btn btn-warning" id="demoDataBtn">
+                    <i class="fas fa-bolt"></i> Data Demo
                 </button>
             </div>
 
+            <!-- Main Dashboard -->
             <div class="dashboard">
-                <div class="card">
-                    <h3><i class="fas fa-chart-line"></i> Trend Data 15 Menit</h3>
-                    <div class="chart-container">
-                        <canvas id="trend-chart"></canvas>
+                <div class="card metric-card">
+                    <h3><i class="fas fa-thermometer-half"></i> SUHU SAAT INI</h3>
+                    <div class="metric-value" id="currentTemperature">28.5°C</div>
+                    <div class="metric-label">Tambak 1</div>
+                    <div class="status-indicator">
+                        <div class="status-dot status-normal"></div>
+                        <span>Kondisi Optimal</span>
+                    </div>
+                </div>
+
+                <div class="card metric-card">
+                    <h3><i class="fas fa-tint"></i> pH SAAT INI</h3>
+                    <div class="metric-value" id="currentPh">7.2</div>
+                    <div class="metric-label">Tambak 1</div>
+                    <div class="status-indicator">
+                        <div class="status-dot status-normal"></div>
+                        <span>Kondisi Optimal</span>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3><i class="fas fa-table"></i> Data Terbaru</h3>
+                    <h3><i class="fas fa-chart-line"></i> TREND 15 MENIT TERAKHIR</h3>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-history"></i> DATA TERBARU</h3>
                     <table class="data-table">
                         <thead>
                             <tr>
                                 <th>Waktu</th>
-                                <th>Tambak</th>
                                 <th>Suhu</th>
                                 <th>pH</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody id="recent-data">
+                        <tbody id="recentDataBody">
+                            <!-- Data will be populated by JavaScript -->
                         </tbody>
                     </table>
                 </div>
-            </div>
 
-            <div class="card">
-                <h3><i class="fas fa-database"></i> Log Sistem & Notifikasi</h3>
-                <div class="log-container" id="system-log">
-                    <div class="log-entry">Sistem dimulai - Monitoring 3 tambak aktif</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Daily Analysis Tab -->
-        <div id="daily-tab" class="hidden">
-            <div class="card">
-                <h3><i class="fas fa-calendar-day"></i> Analisis Data Harian</h3>
-                
-                <div class="daily-controls">
-                    <div>
-                        <label>Pilih Tambak:</label>
-                        <select id="daily-pond" onchange="updateDailyAnalysis()" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                            <option value="1">Tambak 1 - Udang Vaname</option>
-                            <option value="2">Tambak 2 - Bandeng</option>
-                            <option value="3">Tambak 3 - Nila</option>
-                        </select>
+                <div class="card">
+                    <h3><i class="fas fa-database"></i> LOG DATABASE</h3>
+                    <div class="database-log" id="databaseLog">
+                        <!-- Log entries will be populated by JavaScript -->
                     </div>
-                    <input type="date" id="daily-date" onchange="updateDailyAnalysis()">
-                    <button class="btn btn-primary" onclick="downloadDailyReport()">
-                        <i class="fas fa-download"></i> Download Laporan
-                    </button>
                 </div>
 
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <div class="summary-label">Rata-rata Suhu</div>
-                        <div class="summary-value" id="daily-avg-temp">28.5°C</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Rata-rata pH</div>
-                        <div class="summary-value" id="daily-avg-ph">7.2</div>
-                    </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Status Harian</div>
-                        <div class="summary-value">
-                            <span class="badge badge-success">OPTIMAL</span>
+                <div class="card">
+                    <h3><i class="fas fa-robot"></i> REKOMENDASI AI</h3>
+                    <div class="ai-recommendation" id="aiRecommendation">
+                        <div class="recommendation-title">
+                            <i class="fas fa-brain"></i> ANALISIS KONDISI SAAT INI
+                        </div>
+                        <div class="recommendation-content">
+                            <div class="recommendation-item">
+                                <i class="fas fa-check-circle" style="color: var(--success-500);"></i>
+                                <span>Semua parameter dalam kondisi optimal</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-sync-alt" style="color: var(--primary-500);"></i>
+                                <span>Lanjutkan monitoring rutin</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-chart-line" style="color: var(--warning-500);"></i>
+                                <span>Pantau fluktuasi suhu harian</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="summary-item">
-                        <div class="summary-label">Efisiensi</div>
-                        <div class="summary-value" id="daily-efficiency">92%</div>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <canvas id="daily-chart"></canvas>
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <h4>Data 15 Menit - <span id="daily-pond-name">Tambak 1</span></h4>
-                    <div style="max-height: 300px; overflow-y: auto;">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Waktu</th>
-                                    <th>Suhu</th>
-                                    <th>pH</th>
-                                    <th>Status</th>
-                                    <th>Analisis</th>
-                                </tr>
-                            </thead>
-                            <tbody id="daily-data">
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Notifications Tab -->
-        <div id="notifications-tab" class="hidden">
+        <!-- Hourly Analysis Dashboard -->
+        <div id="hourlyDashboard" class="dashboard-section" style="display: none;">
+            <div class="period-indicator">
+                <i class="fas fa-chart-bar"></i> Analisis Data Per Jam - 24 Jam Terakhir
+            </div>
+
+            <div class="dashboard">
+                <div class="card">
+                    <h3><i class="fas fa-thermometer-half"></i> RATA-RATA SUHU PER JAM</h3>
+                    <div class="chart-container">
+                        <canvas id="hourlyTempChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-tint"></i> RATA-RATA pH PER JAM</h3>
+                    <div class="chart-container">
+                        <canvas id="hourlyPhChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-chart-bar"></i> DISTRIBUSI STATUS PER JAM</h3>
+                    <div class="chart-container">
+                        <canvas id="statusDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
-                <h3><i class="fab fa-whatsapp"></i> Notifikasi WhatsApp</h3>
-                
-                <div class="api-status status-online">
-                    <i class="fas fa-circle" style="color: #4caf50;"></i>
-                    <span>WhatsApp API: <strong>READY</strong> - Sistem dapat mengirim notifikasi</span>
-                </div>
+                <h3><i class="fas fa-table"></i> DATA ANALISIS PER JAM</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Jam</th>
+                            <th>Avg Suhu</th>
+                            <th>Avg pH</th>
+                            <th>Status Dominan</th>
+                            <th>Jumlah Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hourlyAnalysisBody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                <div class="notification-settings">
-                    <h4 style="margin-bottom: 20px; color: var(--primary);">
-                        <i class="fas fa-cog"></i> Konfigurasi WhatsApp
-                    </h4>
+        <!-- Summary Dashboard -->
+        <div id="summaryDashboard" class="dashboard-section" style="display: none;">
+            <div class="period-indicator">
+                <i class="fas fa-tachometer-alt"></i> Dashboard Rangkuman - Kondisi Saat Ini vs Harusnya
+            </div>
+
+            <div class="summary-dashboard">
+                <div class="summary-card">
+                    <h3><i class="fas fa-thermometer-half"></i> ANALISIS SUHU</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="label">Suhu Saat Ini</div>
+                            <div class="value" id="currentTempSummary">28.5°C</div>
+                            <div class="trend trend-stable"><i class="fas fa-check-circle"></i> Optimal</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="label">Rentang Ideal</div>
+                            <div class="value">28-30°C</div>
+                            <div class="trend trend-stable"><i class="fas fa-bullseye"></i> Target</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="label">Deviasi</div>
+                            <div class="value" id="tempDeviation">+0.5°C</div>
+                            <div class="trend trend-up"><i class="fas fa-arrow-up"></i> Di Atas</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="label">Status</div>
+                            <div class="value" style="font-size: 1.1em;">
+                                <span class="badge badge-success">Optimal</span>
+                            </div>
+                            <div class="trend trend-success"><i class="fas fa-thumbs-up"></i> Baik</div>
+                        </div>
+                    </div>
                     
-                    <div class="setting-item">
-                        <label><i class="fas fa-phone"></i> Nomor WhatsApp Tujuan</label>
-                        <input type="text" id="whatsapp-number" 
-                               placeholder="Contoh: 628123456789 (tanpa +)" 
-                               value="628123456789">
-                        <small style="color: var(--gray);">Gunakan format internasional tanpa +</small>
+                    <!-- ENHANCED RECOMMENDATION SECTION -->
+                    <div class="ai-recommendation" style="display: block;">
+                        <div class="recommendation-title">
+                            <i class="fas fa-robot"></i> REKOMENDASI AI UNTUK SUHU
+                        </div>
+                        <div class="recommendation-content">
+                            <div class="recommendation-item">
+                                <i class="fas fa-check-circle" style="color: var(--success-500);"></i>
+                                <span>Suhu saat ini dalam rentang optimal 28-30°C</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-sync-alt" style="color: var(--primary-500);"></i>
+                                <span>Pertahankan kondisi current monitoring</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-chart-line" style="color: var(--warning-500);"></i>
+                                <span>Monitor fluktuasi harian secara berkala</span>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="setting-item">
-                        <label><i class="fas fa-edit"></i> Pesan Default</label>
-                        <textarea id="whatsapp-message" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-🚨 PERINGATAN AQUASENSE PRO 🚨
-
-Tambak: {tambak}
-Parameter di luar batas normal!
-Suhu: {suhu}°C | pH: {ph}
-Status: {status}
-Waktu: {waktu}
-
-Segera periksa kondisi tambak!
-                        </textarea>
-                    </div>
-
-                    <button class="btn btn-success" onclick="saveWhatsAppSettings()" style="width: 100%;">
-                        <i class="fas fa-save"></i> Simpan Pengaturan WhatsApp
-                    </button>
                 </div>
 
-                <div class="whatsapp-demo">
-                    <h4><i class="fab fa-whatsapp"></i> Test Notifikasi WhatsApp</h4>
-                    <p>Test pengiriman notifikasi ke nomor WhatsApp yang telah dikonfigurasi:</p>
+                <div class="summary-card">
+                    <h3><i class="fas fa-tint"></i> ANALISIS pH</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="label">pH Saat Ini</div>
+                            <div class="value" id="currentPhSummary">7.2</div>
+                            <div class="trend trend-stable"><i class="fas fa-check-circle"></i> Optimal</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="label">Rentang Ideal</div>
+                            <div class="value">6.8-7.8</div>
+                            <div class="trend trend-stable"><i class="fas fa-bullseye"></i> Target</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="label">Deviasi</div>
+                            <div class="value" id="phDeviation">-0.1</div>
+                            <div class="trend trend-down"><i class="fas fa-arrow-down"></i> Di Bawah</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="label">Status</div>
+                            <div class="value" style="font-size: 1.1em;">
+                                <span class="badge badge-success">Optimal</span>
+                            </div>
+                            <div class="trend trend-success"><i class="fas fa-thumbs-up"></i> Baik</div>
+                        </div>
+                    </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
-                        <button class="btn" style="background: white; color: #25D366;" 
-                                onclick="testWhatsApp('normal')">
-                            <i class="fas fa-check"></i> Test Normal
-                        </button>
-                        <button class="btn" style="background: white; color: #ffb300;" 
-                                onclick="testWhatsApp('warning')">
-                            <i class="fas fa-exclamation-triangle"></i> Test Warning
-                        </button>
-                        <button class="btn" style="background: white; color: #f44336;" 
-                                onclick="testWhatsApp('danger')">
-                            <i class="fas fa-skull-crossbones"></i> Test Danger
-                        </button>
+                    <!-- ENHANCED RECOMMENDATION SECTION -->
+                    <div class="ai-recommendation" style="display: block;">
+                        <div class="recommendation-title">
+                            <i class="fas fa-robot"></i> REKOMENDASI AI UNTUK pH
+                        </div>
+                        <div class="recommendation-content">
+                            <div class="recommendation-item">
+                                <i class="fas fa-check-circle" style="color: var(--success-500);"></i>
+                                <span>pH dalam batas normal 6.8-7.8</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-exclamation-triangle" style="color: var(--warning-500);"></i>
+                                <span>Cenderung sedikit asam, pantau trend berikutnya</span>
+                            </div>
+                            <div class="recommendation-item">
+                                <i class="fas fa-clock" style="color: var(--primary-500);"></i>
+                                <span>Analisis trend 24 jam untuk antisipasi</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div style="margin-top: 20px;">
-                    <h4><i class="fas fa-history"></i> Riwayat Notifikasi</h4>
-                    <div class="log-container">
-                        <div class="log-entry" id="whatsapp-log">
-                            <i class="fab fa-whatsapp" style="color: #25D366;"></i>
-                            Belum ada notifikasi yang dikirim
+            <div class="dashboard">
+                <div class="card">
+                    <h3><i class="fas fa-chart-pie"></i> DISTRIBUSI KONDISI 24 JAM</h3>
+                    <div class="distribution-chart-container">
+                        <canvas id="conditionDistributionChart"></canvas>
+                    </div>
+                    
+                    <!-- ENHANCED LEGEND -->
+                    <div class="legend-container" style="margin-top: 20px;">
+                        <div class="legend-title" style="font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">
+                            <i class="fas fa-info-circle"></i> LEGENDA DISTRIBUSI:
+                        </div>
+                        <div class="legend-grid" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                            <div class="legend-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--success-50); border-radius: 8px; border-left: 4px solid var(--success-500);">
+                                <div class="legend-color" style="width: 16px; height: 16px; border-radius: 50%; background: var(--success-500);"></div>
+                                <div class="legend-text" style="font-size: 0.9em;">
+                                    <strong style="color: var(--success-700);">OPTIMAL</strong> - Parameter dalam rentang ideal
+                                </div>
+                            </div>
+                            <div class="legend-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--warning-50); border-radius: 8px; border-left: 4px solid var(--warning-500);">
+                                <div class="legend-color" style="width: 16px; height: 16px; border-radius: 50%; background: var(--warning-500);"></div>
+                                <div class="legend-text" style="font-size: 0.9em;">
+                                    <strong style="color: var(--warning-700);">PERHATIAN</strong> - Mendekati batas kritis
+                                </div>
+                            </div>
+                            <div class="legend-item" style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--danger-50); border-radius: 8px; border-left: 4px solid var(--danger-500);">
+                                <div class="legend-color" style="width: 16px; height: 16px; border-radius: 50%; background: var(--danger-500);"></div>
+                                <div class="legend-text" style="font-size: 0.9em;">
+                                    <strong style="color: var(--danger-700);">BAHAYA</strong> - Di luar batas aman
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><i class="fas fa-exclamation-triangle"></i> ALERT & PERINGATAN</h3>
+                    <div style="margin-top: 20px;">
+                        <div class="summary-item" style="background: var(--success-50); margin-bottom: 12px;">
+                            <div class="label">Status Sistem</div>
+                            <div class="value" style="color: var(--success-600);">Normal</div>
+                            <div class="trend trend-success"><i class="fas fa-check"></i> Semua parameter optimal</div>
+                        </div>
+                        <div class="summary-item" style="background: var(--warning-50); margin-bottom: 12px;">
+                            <div class="label">Peringatan Aktif</div>
+                            <div class="value" style="color: var(--warning-600);">0</div>
+                            <div class="trend trend-stable"><i class="fas fa-shield-alt"></i> Tidak ada alert</div>
+                        </div>
+                        <div class="summary-item" style="background: var(--primary-50);">
+                            <div class="label">Rekomendasi Sistem</div>
+                            <div class="value" style="font-size: 1.1em;">Lanjutkan Monitoring</div>
+                            <div class="trend trend-stable"><i class="fas fa-robot"></i> AI Recommended</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3><i class="fas fa-tasks"></i> ACTION PLAN</h3>
+                    <div style="margin-top: 20px;">
+                        <div class="threshold-info" style="background: var(--success-50); border-color: var(--success-200);">
+                            <strong>✅ Tindakan Saat Ini:</strong><br>
+                            • Pertahankan parameter current<br>
+                            • Lanjutkan monitoring rutin<br>
+                            • Dokumentasi data harian
+                        </div>
+                        <div class="threshold-info" style="background: var(--warning-50); border-color: var(--warning-200); margin-top: 12px;">
+                            <strong>⚠️ Tindakan Preventif:</strong><br>
+                            • Siapkan sistem backup<br>
+                            • Cek kalibrasi sensor<br>
+                            • Review data historis
+                        </div>
+                        <div class="threshold-info" style="background: var(--primary-50); margin-top: 12px;">
+                            <strong>📊 Monitoring Berikutnya:</strong><br>
+                            • Analisis trend 48 jam<br>
+                            • Prediksi kondisi mingguan<br>
+                            • Optimasi parameter
                         </div>
                     </div>
                 </div>
@@ -723,530 +1181,772 @@ Segera periksa kondisi tambak!
     </div>
 
     <script>
-        // Variabel global
-        let autoRefreshInterval;
-        let isAutoRefresh = false;
-        let currentPond = 1;
-        let dataHistory = {1: [], 2: [], 3: []};
-        let charts = {};
-        let whatsappSettings = {
-            number: '628123456789',
-            message: `🚨 PERINGATAN AQUASENSE PRO 🚨
+        // Enhanced Database Simulation with Time-based Analysis
+        class TimeBasedPondDatabase {
+            constructor() {
+                this.records = [];
+                this.maxRecords = 500;
+                this.stats = {
+                    total: 0,
+                    normal: 0,
+                    warning: 0,
+                    danger: 0
+                };
+            }
 
-Tambak: {tambak}
-Parameter di luar batas normal!
-Suhu: {suhu}°C | pH: {ph}
-Status: {status}
-Waktu: {waktu}
+            insertRecord(pond, temperature, ph, status) {
+                const record = {
+                    id: Date.now(),
+                    timestamp: new Date(),
+                    pond: pond,
+                    temperature: parseFloat(temperature),
+                    ph: parseFloat(ph),
+                    status: status,
+                    dbAction: 'INSERT'
+                };
 
-Segera periksa kondisi tambak!`
-        };
+                this.records.unshift(record);
+                this.updateStats(status);
+                
+                if (this.records.length > this.maxRecords) {
+                    this.records = this.records.slice(0, this.maxRecords);
+                }
 
-        // Data awal untuk 3 tambak
-        const initialData = {
-            1: [ // Tambak 1 - Udang Vaname
-                { time: '14:00', temp: 28.5, ph: 7.2, status: 'normal' },
-                { time: '13:45', temp: 28.7, ph: 7.1, status: 'normal' },
-                { time: '13:30', temp: 29.0, ph: 7.3, status: 'normal' }
-            ],
-            2: [ // Tambak 2 - Bandeng
-                { time: '14:00', temp: 29.1, ph: 7.4, status: 'normal' },
-                { time: '13:45', temp: 29.3, ph: 7.3, status: 'normal' },
-                { time: '13:30', temp: 28.9, ph: 7.5, status: 'normal' }
-            ],
-            3: [ // Tambak 3 - Nila
-                { time: '14:00', temp: 27.8, ph: 7.0, status: 'warning' },
-                { time: '13:45', temp: 27.5, ph: 6.9, status: 'warning' },
-                { time: '13:30', temp: 27.9, ph: 7.1, status: 'normal' }
-            ]
-        };
+                return record;
+            }
 
-        const pondNames = {
-            1: 'Tambak 1 - Udang Vaname',
-            2: 'Tambak 2 - Bandeng', 
-            3: 'Tambak 3 - Nila'
-        };
+            updateStats(status) {
+                this.stats.total++;
+                this.stats[status]++;
+            }
 
-        // Inisialisasi aplikasi
-        function initializeApp() {
-            initializeCharts();
-            loadInitialData();
-            updateDisplay();
-            loadSettings();
-            startAutoRefresh();
-            updateOverview();
+            getHourlyAnalysis(hours = 24) {
+                const now = new Date();
+                const hourlyData = {};
+                
+                for (let i = 0; i < hours; i++) {
+                    const hour = new Date(now);
+                    hour.setHours(now.getHours() - i);
+                    const hourKey = hour.getHours().toString().padStart(2, '0') + ':00';
+                    hourlyData[hourKey] = {
+                        temperatures: [],
+                        phValues: [],
+                        statuses: []
+                    };
+                }
+
+                this.records.forEach(record => {
+                    const recordHour = record.timestamp.getHours().toString().padStart(2, '0') + ':00';
+                    if (hourlyData[recordHour]) {
+                        hourlyData[recordHour].temperatures.push(record.temperature);
+                        hourlyData[recordHour].phValues.push(record.ph);
+                        hourlyData[recordHour].statuses.push(record.status);
+                    }
+                });
+
+                return hourlyData;
+            }
+
+            get15MinuteAnalysis() {
+                const now = new Date();
+                const fifteenMinutesAgo = new Date(now.getTime() - 15 * 60 * 1000);
+                
+                return this.records.filter(record => 
+                    record.timestamp >= fifteenMinutesAgo
+                ).slice(0, 15);
+            }
+
+            getSummaryStats() {
+                const recentData = this.records.slice(0, 50);
+                const temperatures = recentData.map(r => r.temperature);
+                const phValues = recentData.map(r => r.ph);
+                
+                return {
+                    currentTemp: temperatures[0] || 0,
+                    currentPh: phValues[0] || 0,
+                    avgTemp: temperatures.reduce((a, b) => a + b, 0) / temperatures.length,
+                    avgPh: phValues.reduce((a, b) => a + b, 0) / phValues.length,
+                    maxTemp: Math.max(...temperatures),
+                    minTemp: Math.min(...temperatures),
+                    maxPh: Math.max(...phValues),
+                    minPh: Math.min(...phValues),
+                    tempDeviation: (temperatures[0] || 0) - 29,
+                    phDeviation: (phValues[0] || 0) - 7.3
+                };
+            }
         }
 
-        function initializeCharts() {
-            // Trend Chart
-            const trendCtx = document.getElementById('trend-chart').getContext('2d');
-            charts.trend = new Chart(trendCtx, {
-                type: 'line',
-                data: {
-                    labels: initialData[1].map(d => d.time).reverse(),
-                    datasets: [
-                        {
-                            label: 'Suhu (°C)',
-                            data: initialData[1].map(d => d.temp).reverse(),
-                            borderColor: '#2196f3',
-                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                            tension: 0.4,
-                            fill: true
+        // Enhanced Monitoring App with Time-based Analysis
+        class TimeBasedMonitoringApp {
+            constructor() {
+                this.db = new TimeBasedPondDatabase();
+                this.currentPond = 1;
+                this.autoRefreshEnabled = true;
+                this.countdown = 15;
+                this.currentPeriod = 'realtime';
+                this.init();
+            }
+
+            init() {
+                this.initializeCharts();
+                this.setupEventListeners();
+                this.generateInitialData();
+                this.startAutoRefresh();
+                this.startCountdown();
+                this.switchPeriod('realtime');
+            }
+
+            initializeCharts() {
+                this.initializeRealTimeCharts();
+                this.initializeHourlyCharts();
+                this.initializeSummaryCharts();
+            }
+
+            initializeSummaryCharts() {
+                const distributionCtx = document.getElementById('conditionDistributionChart').getContext('2d');
+                
+                // FIXED: Enhanced chart dengan warna yang lebih visible
+                this.distributionChart = new Chart(distributionCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Optimal (70%)', 'Perhatian (25%)', 'Bahaya (5%)'],
+                        datasets: [{
+                            data: [70, 25, 5],
+                            backgroundColor: [
+                                '#4caf50', // Hijau - Optimal
+                                '#ffb300', // Kuning - Perhatian  
+                                '#f44336'  // Merah - Bahaya
+                            ],
+                            borderColor: [
+                                '#ffffff',
+                                '#ffffff', 
+                                '#ffffff'
+                            ],
+                            borderWidth: 3,
+                            hoverOffset: 15,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '55%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: 'var(--text-primary)',
+                                    font: { 
+                                        size: 12,
+                                        family: "'Segoe UI', system-ui, sans-serif",
+                                        weight: '600'
+                                    },
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    pointRadius: 6
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'var(--gray-800)',
+                                titleColor: 'var(--gray-100)',
+                                bodyColor: 'var(--gray-100)',
+                                borderColor: 'var(--primary-500)',
+                                borderWidth: 2,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed;
+                                        return `${label}: ${value}% dari total waktu`;
+                                    }
+                                }
+                            }
                         },
-                        {
-                            label: 'pH',
-                            data: initialData[1].map(d => d.ph).reverse(),
-                            borderColor: '#009688',
-                            backgroundColor: 'rgba(0, 150, 136, 0.1)',
-                            tension: 0.4,
-                            fill: true,
-                            yAxisID: 'y1'
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true,
+                            duration: 2000
                         }
-                    ]
-                },
-                options: {
+                    }
+                });
+            }
+
+            initializeRealTimeCharts() {
+                // Initialize trend chart
+                const trendCtx = document.getElementById('trendChart').getContext('2d');
+                this.trendChart = new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: 'Suhu (°C)',
+                                data: [],
+                                borderColor: 'var(--primary-500)',
+                                backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'pH',
+                                data: [],
+                                borderColor: 'var(--secondary-500)',
+                                backgroundColor: 'rgba(0, 150, 136, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: this.getChartOptions('Nilai', 0, 10)
+                });
+            }
+
+            initializeHourlyCharts() {
+                // Initialize hourly temperature chart
+                const hourlyTempCtx = document.getElementById('hourlyTempChart').getContext('2d');
+                this.hourlyTempChart = new Chart(hourlyTempCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Suhu Rata-rata (°C)',
+                            data: [],
+                            backgroundColor: 'rgba(33, 150, 243, 0.7)',
+                            borderColor: 'var(--primary-600)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: this.getBarChartOptions('Suhu (°C)')
+                });
+
+                // Initialize hourly pH chart
+                const hourlyPhCtx = document.getElementById('hourlyPhChart').getContext('2d');
+                this.hourlyPhChart = new Chart(hourlyPhCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'pH Rata-rata',
+                            data: [],
+                            backgroundColor: 'rgba(0, 150, 136, 0.7)',
+                            borderColor: 'var(--secondary-600)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: this.getBarChartOptions('pH')
+                });
+
+                // Initialize status distribution chart
+                const statusDistCtx = document.getElementById('statusDistributionChart').getContext('2d');
+                this.statusDistributionChart = new Chart(statusDistCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: 'Normal',
+                                data: [],
+                                backgroundColor: 'var(--success-500)'
+                            },
+                            {
+                                label: 'Warning',
+                                data: [],
+                                backgroundColor: 'var(--warning-500)'
+                            },
+                            {
+                                label: 'Danger',
+                                data: [],
+                                backgroundColor: 'var(--danger-500)'
+                            }
+                        ]
+                    },
+                    options: this.getBarChartOptions('Jumlah Data')
+                });
+            }
+
+            getChartOptions(yAxisTitle, min, max) {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            min: min, 
+                            max: max,
+                            grid: { 
+                                color: 'rgba(33, 150, 243, 0.1)',
+                                borderDash: [5, 5]
+                            },
+                            ticks: {
+                                color: 'var(--text-secondary)',
+                                font: { size: 12 },
+                                callback: function(value) {
+                                    return yAxisTitle.includes('Suhu') ? value + '°C' : value;
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: yAxisTitle,
+                                color: 'var(--text-primary)',
+                                font: { size: 13, weight: 'bold' }
+                            }
+                        },
+                        x: { 
+                            display: true,
+                            grid: { 
+                                color: 'rgba(33, 150, 243, 0.1)',
+                                borderDash: [5, 5]
+                            },
+                            ticks: {
+                                color: 'var(--text-secondary)',
+                                font: { size: 11 },
+                                maxTicksLimit: 6
+                            }
+                        }
+                    },
+                    plugins: { 
+                        legend: { 
+                            display: true,
+                            labels: {
+                                color: 'var(--text-primary)',
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'var(--gray-800)',
+                            titleColor: 'var(--gray-100)',
+                            bodyColor: 'var(--gray-100)',
+                            borderColor: 'var(--primary-500)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                };
+            }
+
+            getBarChartOptions(title) {
+                return {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
                         y: {
-                            beginAtZero: false,
-                            title: { display: true, text: 'Suhu (°C)' }
+                            grid: { 
+                                color: 'rgba(33, 150, 243, 0.1)',
+                                borderDash: [5, 5]
+                            },
+                            ticks: {
+                                color: 'var(--text-secondary)',
+                                font: { size: 11 }
+                            }
                         },
-                        y1: {
-                            beginAtZero: false,
-                            position: 'right',
-                            title: { display: true, text: 'pH' },
-                            grid: { drawOnChartArea: false }
+                        x: {
+                            grid: { 
+                                color: 'rgba(33, 150, 243, 0.1)',
+                                borderDash: [5, 5]
+                            },
+                            ticks: {
+                                color: 'var(--text-secondary)',
+                                font: { size: 10 }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'var(--gray-800)',
+                            titleColor: 'var(--gray-100)',
+                            bodyColor: 'var(--gray-100)'
                         }
                     }
-                }
-            });
-
-            // Daily Chart
-            const dailyCtx = document.getElementById('daily-chart').getContext('2d');
-            charts.daily = new Chart(dailyCtx, {
-                type: 'line',
-                data: {
-                    labels: ['00:00', '06:00', '12:00', '18:00', '23:45'],
-                    datasets: [
-                        {
-                            label: 'Suhu Harian',
-                            data: [27.5, 28.8, 30.2, 29.5, 28.0],
-                            borderColor: '#2196f3',
-                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                            fill: true
-                        },
-                        {
-                            label: 'Ideal Suhu',
-                            data: [29, 29, 29, 29, 29],
-                            borderColor: '#4caf50',
-                            borderDash: [5, 5],
-                            fill: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-
-        function loadInitialData() {
-            dataHistory = JSON.parse(JSON.stringify(initialData));
-        }
-
-        function loadSettings() {
-            const saved = localStorage.getItem('whatsappSettings');
-            if (saved) {
-                whatsappSettings = JSON.parse(saved);
-                document.getElementById('whatsapp-number').value = whatsappSettings.number;
-                document.getElementById('whatsapp-message').value = whatsappSettings.message;
-            }
-        }
-
-        function saveWhatsAppSettings() {
-            whatsappSettings.number = document.getElementById('whatsapp-number').value;
-            whatsappSettings.message = document.getElementById('whatsapp-message').value;
-            localStorage.setItem('whatsappSettings', JSON.stringify(whatsappSettings));
-            addLog('Pengaturan WhatsApp disimpan');
-            alert('✅ Pengaturan WhatsApp berhasil disimpan!');
-        }
-
-        // Fungsi select pond
-        function selectPond(pondNumber) {
-            currentPond = pondNumber;
-            
-            // Update UI selection
-            document.querySelectorAll('.pond-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelectorAll('.pond-mini-card').forEach(card => {
-                card.classList.remove('active');
-            });
-            
-            document.querySelector(`.pond-btn.tambak${pondNumber}`).classList.add('active');
-            document.querySelector(`.pond-mini-card.tambak${pondNumber}`).classList.add('active');
-            
-            updateDisplay();
-        }
-
-        // Fungsi generate data dengan status berbeda
-        function generateNormalData() {
-            const temp = 28 + Math.random() * 2;
-            const ph = 7.0 + Math.random() * 0.6;
-            generateData(temp, ph, 'normal');
-        }
-
-        function generateWarningData() {
-            const temp = 31 + Math.random() * 2;
-            const ph = 7.8 + Math.random() * 0.4;
-            generateData(temp, ph, 'warning');
-        }
-
-        function generateDangerData() {
-            const temp = 33 + Math.random() * 2;
-            const ph = 8.2 + Math.random() * 0.8;
-            generateData(temp, ph, 'danger');
-        }
-
-        function generateData(temp, ph, status) {
-            const now = new Date();
-            const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
-                             now.getMinutes().toString().padStart(2, '0');
-            
-            const newData = {
-                time: timeString,
-                temp: parseFloat(temp.toFixed(1)),
-                ph: parseFloat(ph.toFixed(1)),
-                status: status
-            };
-
-            // Add to current pond history
-            dataHistory[currentPond].unshift(newData);
-            if (dataHistory[currentPond].length > 10) {
-                dataHistory[currentPond] = dataHistory[currentPond].slice(0, 10);
+                };
             }
 
-            updateDisplay();
-            updateOverview();
-            addLog(`Tambak ${currentPond}: ${temp.toFixed(1)}°C, pH ${ph.toFixed(1)} - ${status.toUpperCase()}`);
-
-            // Kirim notifikasi jika status warning atau danger
-            if (status !== 'normal') {
-                sendWhatsAppNotification(newData, currentPond);
-            }
-        }
-
-        function updateDisplay() {
-            const currentData = dataHistory[currentPond];
-            if (currentData.length > 0) {
-                const latest = currentData[0];
-                
-                // Update metrics
-                document.getElementById('current-temp').textContent = latest.temp + '°C';
-                document.getElementById('current-ph').textContent = latest.ph;
-                document.getElementById('current-pond').textContent = pondNames[currentPond];
-                document.getElementById('current-pond-ph').textContent = pondNames[currentPond];
-                
-                // Update status
-                updateStatus('current-temp', latest.status);
-                updateStatus('current-ph', latest.status);
-                
-                // Update table and chart
-                updateDataTable();
-                updateChart();
-            }
-        }
-
-        function updateOverview() {
-            // Update overview untuk semua tambak
-            for (let pond = 1; pond <= 3; pond++) {
-                const data = dataHistory[pond];
-                if (data.length > 0) {
-                    const latest = data[0];
-                    document.getElementById(`overview-temp-${pond}`).textContent = latest.temp + '°C';
-                    document.getElementById(`overview-ph-${pond}`).textContent = latest.ph;
-                    
-                    let badgeClass = 'badge-success';
-                    if (latest.status === 'warning') badgeClass = 'badge-warning';
-                    if (latest.status === 'danger') badgeClass = 'badge-danger';
-                    
-                    document.getElementById(`overview-status-${pond}`).innerHTML = 
-                        `<span class="badge ${badgeClass}">${latest.status.toUpperCase()}</span>`;
-                }
-            }
-        }
-
-        function updateStatus(metricId, status) {
-            const metricCard = document.getElementById(metricId).closest('.metric-card');
-            const statusElement = metricCard.querySelector('.status');
-            const dot = statusElement.querySelector('.status-dot');
-            const text = statusElement.querySelector('span');
-            
-            dot.className = 'status-dot';
-            
-            switch(status) {
-                case 'normal':
-                    dot.classList.add('status-normal');
-                    text.textContent = 'Kondisi Optimal';
-                    statusElement.style.background = '#e8f5e8';
-                    break;
-                case 'warning':
-                    dot.classList.add('status-warning');
-                    text.textContent = 'Perhatian';
-                    statusElement.style.background = '#fff8e1';
-                    break;
-                case 'danger':
-                    dot.classList.add('status-danger');
-                    text.textContent = 'Bahaya!';
-                    statusElement.style.background = '#ffebee';
-                    break;
-            }
-        }
-
-        function updateDataTable() {
-            const tbody = document.getElementById('recent-data');
-            tbody.innerHTML = '';
-            
-            // Show data from all ponds, latest first
-            const allData = [];
-            for (let pond = 1; pond <= 3; pond++) {
-                dataHistory[pond].forEach(data => {
-                    allData.push({
-                        ...data,
-                        pond: pond,
-                        pondName: pondNames[pond]
+            setupEventListeners() {
+                // Time tab switching
+                document.querySelectorAll('.time-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        this.switchPeriod(tab.dataset.period);
                     });
                 });
+
+                // Pond selection
+                document.querySelectorAll('.pond-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.currentPond = parseInt(btn.dataset.pond);
+                        this.updatePondSelection();
+                        this.generateNewData();
+                    });
+                });
+
+                // Control buttons
+                document.getElementById('generateDataBtn').addEventListener('click', () => {
+                    this.generateNewData();
+                });
+
+                document.getElementById('autoRefreshBtn').addEventListener('click', () => {
+                    this.toggleAutoRefresh();
+                });
+
+                document.getElementById('demoDataBtn').addEventListener('click', () => {
+                    this.generateDemoData();
+                });
             }
-            
-            // Sort by time (newest first) and take top 10
-            allData.sort((a, b) => b.time.localeCompare(a.time));
-            const recentData = allData.slice(0, 10);
-            
-            recentData.forEach(data => {
-                const row = document.createElement('tr');
-                let badgeClass = 'badge-success';
-                if (data.status === 'warning') badgeClass = 'badge-warning';
-                if (data.status === 'danger') badgeClass = 'badge-danger';
+
+            switchPeriod(period) {
+                this.currentPeriod = period;
                 
-                let pondBadgeClass = `badge-tambak${data.pond}`;
+                document.querySelectorAll('.time-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-period="${period}"]`).classList.add('active');
                 
-                row.innerHTML = `
-                    <td>${data.time}</td>
-                    <td><span class="badge ${pondBadgeClass}">${data.pondName}</span></td>
-                    <td>${data.temp}°C</td>
-                    <td>${data.ph}</td>
-                    <td><span class="badge ${badgeClass}">${data.status.toUpperCase()}</span></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function updateChart() {
-            if (charts.trend && dataHistory[currentPond].length > 0) {
-                const currentData = dataHistory[currentPond];
-                charts.trend.data.labels = currentData.map(d => d.time).reverse();
-                charts.trend.data.datasets[0].data = currentData.map(d => d.temp).reverse();
-                charts.trend.data.datasets[1].data = currentData.map(d => d.ph).reverse();
-                charts.trend.update();
-            }
-        }
-
-        // FUNGSI WHATSAPP NYATA
-        function sendWhatsAppNotification(data, pondNumber) {
-            const phoneNumber = whatsappSettings.number;
-            let message = whatsappSettings.message
-                .replace('{tambak}', pondNames[pondNumber])
-                .replace('{suhu}', data.temp)
-                .replace('{ph}', data.ph)
-                .replace('{status}', data.status.toUpperCase())
-                .replace('{waktu}', new Date().toLocaleString('id-ID'));
-
-            const encodedMessage = encodeURIComponent(message);
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-            
-            openWhatsApp(whatsappUrl, message, data.status, pondNumber);
-        }
-
-        function openWhatsApp(url, message, status, pondNumber) {
-            const newWindow = window.open(url, '_blank');
-            
-            if (newWindow) {
-                addWhatsAppLog(`✅ Notifikasi ${status.toUpperCase()} untuk ${pondNames[pondNumber]} dikirim via WhatsApp`);
-                addLog(`WhatsApp: Notifikasi ${status} untuk Tambak ${pondNumber} terkirim`);
-            } else {
-                addWhatsAppLog('❌ Gagal membuka WhatsApp. Pastikan pop-up diizinkan.');
-            }
-        }
-
-        function testWhatsApp(type) {
-            let testData, testPond;
-            switch(type) {
-                case 'normal':
-                    testData = { temp: 28.5, ph: 7.2, status: 'normal' };
-                    testPond = 1;
-                    break;
-                case 'warning':
-                    testData = { temp: 31.5, ph: 7.9, status: 'warning' };
-                    testPond = 2;
-                    break;
-                case 'danger':
-                    testData = { temp: 33.5, ph: 8.5, status: 'danger' };
-                    testPond = 3;
-                    break;
-            }
-            
-            addWhatsAppLog(`📱 Mengirim test notifikasi ${type.toUpperCase()} untuk ${pondNames[testPond]}...`);
-            sendWhatsAppNotification(testData, testPond);
-        }
-
-        // Daily Analysis Functions
-        function updateDailyAnalysis() {
-            const pond = document.getElementById('daily-pond').value;
-            const date = document.getElementById('daily-date').value;
-            
-            document.getElementById('daily-pond-name').textContent = pondNames[pond];
-            
-            // Update daily data table
-            const dailyTbody = document.getElementById('daily-data');
-            dailyTbody.innerHTML = '';
-            
-            const pondData = dataHistory[pond] || [];
-            pondData.forEach(data => {
-                const row = document.createElement('tr');
-                let badgeClass = 'badge-success';
-                if (data.status === 'warning') badgeClass = 'badge-warning';
-                if (data.status === 'danger') badgeClass = 'badge-danger';
+                document.querySelectorAll('.dashboard-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.getElementById(period + 'Dashboard').style.display = 'block';
                 
-                let analysis = 'Kondisi optimal';
-                if (data.status === 'warning') analysis = 'Perlu monitoring ketat';
-                if (data.status === 'danger') analysis = 'Perlu tindakan segera';
+                this.updatePeriodData(period);
+            }
+
+            updatePeriodData(period) {
+                switch(period) {
+                    case 'realtime':
+                        this.updateRealTimeData();
+                        break;
+                    case 'hourly':
+                        this.updateHourlyAnalysis();
+                        break;
+                    case 'summary':
+                        this.updateSummaryDashboard();
+                        break;
+                }
+            }
+
+            updatePondSelection() {
+                document.querySelectorAll('.pond-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (parseInt(btn.dataset.pond) === this.currentPond) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            generateInitialData() {
+                for (let i = 0; i < 50; i++) {
+                    setTimeout(() => this.generateNewData(true), i * 100);
+                }
+            }
+
+            generateNewData(initial = false) {
+                const temp = (26 + Math.random() * 6).toFixed(1);
+                const ph = (6.5 + Math.random() * 1.5).toFixed(1);
+                const status = this.evaluateStatus(temp, ph);
+
+                this.db.insertRecord(this.currentPond, temp, ph, status);
+
+                this.updatePeriodData(this.currentPeriod);
+
+                if (!initial) {
+                    this.showToast(`Data Tambak ${this.currentPond} diperbarui`);
+                }
+            }
+
+            evaluateStatus(temp, ph) {
+                temp = parseFloat(temp);
+                ph = parseFloat(ph);
+
+                const tempStatus = (temp >= 28 && temp <= 30) ? 'normal' : 
+                                 (temp < 26 || temp > 32) ? 'danger' : 'warning';
+
+                const phStatus = (ph >= 6.8 && ph <= 7.8) ? 'normal' :
+                               (ph < 6.5 || ph > 8.2) ? 'danger' : 'warning';
+
+                if (tempStatus === 'danger' || phStatus === 'danger') return 'danger';
+                if (tempStatus === 'warning' || phStatus === 'warning') return 'warning';
+                return 'normal';
+            }
+
+            updateRealTimeData() {
+                const data = this.db.get15MinuteAnalysis();
+                this.updateRealTimeCharts(data);
+                this.updateRealTimeMetrics(data[0]);
+                this.updateRealTimeTable(data);
                 
-                row.innerHTML = `
-                    <td>${data.time}</td>
-                    <td>${data.temp}°C</td>
-                    <td>${data.ph}</td>
-                    <td><span class="badge ${badgeClass}">${data.status.toUpperCase()}</span></td>
-                    <td>${analysis}</td>
-                `;
-                dailyTbody.appendChild(row);
-            });
-        }
+                // Update stats
+                document.getElementById('totalData').textContent = this.db.stats.total;
+                document.getElementById('normalStatus').textContent = this.db.stats.normal;
+                document.getElementById('warningStatus').textContent = this.db.stats.warning;
+                document.getElementById('dangerStatus').textContent = this.db.stats.danger;
+            }
 
-        function downloadDailyReport() {
-            const pond = document.getElementById('daily-pond').value;
-            const date = document.getElementById('daily-date').value;
-            const pondData = dataHistory[pond] || [];
-            
-            const report = `
-LAPORAN HARIAN MONITORING TAMBAK
-Tambak: ${pondNames[pond]}
-Tanggal: ${date}
+            updateRealTimeCharts(data) {
+                const labels = data.map(record => 
+                    record.timestamp.toLocaleTimeString('id-ID', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    })
+                ).reverse();
 
-RINGKASAN:
-- Rata-rata Suhu: 28.5°C
-- Rata-rata pH: 7.2
-- Status: OPTIMAL
-- Efisiensi: 92%
+                const temperatures = data.map(record => record.temperature).reverse();
+                const phValues = data.map(record => record.ph).reverse();
 
-DATA DETAIL 15 MENIT:
-${pondData.map(d => `${d.time} - Suhu: ${d.temp}°C, pH: ${d.ph}, Status: ${d.status.toUpperCase()}`).join('\n')}
+                this.trendChart.data.labels = labels;
+                this.trendChart.data.datasets[0].data = temperatures;
+                this.trendChart.data.datasets[1].data = phValues;
+                this.trendChart.update();
+            }
 
-Dibuat: ${new Date().toLocaleString()}
-            `;
-            
-            const blob = new Blob([report], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `laporan-${pondNames[pond].toLowerCase().replace(' ', '-')}-${date}.txt`;
-            a.click();
-            
-            addLog(`Laporan harian ${pondNames[pond]} berhasil diunduh`);
-        }
+            updateRealTimeMetrics(latest) {
+                if (latest) {
+                    document.getElementById('currentTemperature').textContent = latest.temperature.toFixed(1) + '°C';
+                    document.getElementById('currentPh').textContent = latest.ph.toFixed(1);
+                    
+                    // Update status indicators
+                    const tempIndicator = document.querySelector('.metric-card:nth-child(1) .status-indicator');
+                    const phIndicator = document.querySelector('.metric-card:nth-child(2) .status-indicator');
+                    
+                    this.updateStatusIndicator(tempIndicator, latest.status);
+                    this.updateStatusIndicator(phIndicator, latest.status);
+                }
+            }
 
-        // Log functions
-        function addLog(message) {
-            const logContainer = document.getElementById('system-log');
-            const logEntry = document.createElement('div');
-            logEntry.className = 'log-entry';
-            logEntry.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
-            logContainer.insertBefore(logEntry, logContainer.firstChild);
-            
-            if (logContainer.children.length > 10) {
-                logContainer.removeChild(logContainer.lastChild);
+            updateStatusIndicator(indicator, status) {
+                const dot = indicator.querySelector('.status-dot');
+                const text = indicator.querySelector('span');
+                
+                dot.className = 'status-dot';
+                dot.classList.add(`status-${status}`);
+                
+                const statusText = {
+                    normal: 'Kondisi Optimal',
+                    warning: 'Perhatian',
+                    danger: 'Bahaya - Tindakan Diperlukan'
+                };
+                
+                text.textContent = statusText[status];
+            }
+
+            updateRealTimeTable(data) {
+                const tbody = document.getElementById('recentDataBody');
+                tbody.innerHTML = '';
+                
+                data.slice(0, 10).forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.timestamp.toLocaleTimeString('id-ID')}</td>
+                        <td>${record.temperature.toFixed(1)}°C</td>
+                        <td>${record.ph.toFixed(1)}</td>
+                        <td><span class="badge badge-${record.status}">${record.status.toUpperCase()}</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            updateHourlyAnalysis() {
+                const hourlyData = this.db.getHourlyAnalysis();
+                const hours = Object.keys(hourlyData).reverse();
+                
+                const tempAverages = hours.map(hour => {
+                    const data = hourlyData[hour].temperatures;
+                    return data.length ? (data.reduce((a, b) => a + b, 0) / data.length).toFixed(1) : 0;
+                });
+                
+                const phAverages = hours.map(hour => {
+                    const data = hourlyData[hour].phValues;
+                    return data.length ? (data.reduce((a, b) => a + b, 0) / data.length).toFixed(1) : 0;
+                });
+
+                this.updateHourlyCharts(hours, tempAverages, phAverages, hourlyData);
+                this.updateHourlyMetrics(tempAverages, phAverages);
+                this.updateHourlyTable(hours, hourlyData);
+            }
+
+            updateHourlyCharts(hours, tempAverages, phAverages, hourlyData) {
+                // Update temperature chart
+                this.hourlyTempChart.data.labels = hours;
+                this.hourlyTempChart.data.datasets[0].data = tempAverages;
+                this.hourlyTempChart.update();
+                
+                // Update pH chart
+                this.hourlyPhChart.data.labels = hours;
+                this.hourlyPhChart.data.datasets[0].data = phAverages;
+                this.hourlyPhChart.update();
+                
+                // Update status distribution chart
+                const statusCounts = hours.map(hour => {
+                    const statuses = hourlyData[hour].statuses;
+                    return {
+                        normal: statuses.filter(s => s === 'normal').length,
+                        warning: statuses.filter(s => s === 'warning').length,
+                        danger: statuses.filter(s => s === 'danger').length
+                    };
+                });
+                
+                this.statusDistributionChart.data.labels = hours;
+                this.statusDistributionChart.data.datasets[0].data = statusCounts.map(s => s.normal);
+                this.statusDistributionChart.data.datasets[1].data = statusCounts.map(s => s.warning);
+                this.statusDistributionChart.data.datasets[2].data = statusCounts.map(s => s.danger);
+                this.statusDistributionChart.update();
+            }
+
+            updateHourlyMetrics(tempAverages, phAverages) {
+                // You can add hourly specific metrics here if needed
+            }
+
+            updateHourlyTable(hours, hourlyData) {
+                const tbody = document.getElementById('hourlyAnalysisBody');
+                tbody.innerHTML = '';
+                
+                hours.forEach(hour => {
+                    const data = hourlyData[hour];
+                    const avgTemp = data.temperatures.length ? 
+                        (data.temperatures.reduce((a, b) => a + b, 0) / data.temperatures.length).toFixed(1) : 'N/A';
+                    const avgPh = data.phValues.length ? 
+                        (data.phValues.reduce((a, b) => a + b, 0) / data.phValues.length).toFixed(1) : 'N/A';
+                    
+                    // Determine dominant status
+                    const statusCounts = {
+                        normal: data.statuses.filter(s => s === 'normal').length,
+                        warning: data.statuses.filter(s => s === 'warning').length,
+                        danger: data.statuses.filter(s => s === 'danger').length
+                    };
+                    const dominantStatus = Object.keys(statusCounts).reduce((a, b) => 
+                        statusCounts[a] > statusCounts[b] ? a : b
+                    );
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${hour}</td>
+                        <td>${avgTemp}°C</td>
+                        <td>${avgPh}</td>
+                        <td><span class="badge badge-${dominantStatus}">${dominantStatus.toUpperCase()}</span></td>
+                        <td>${data.temperatures.length}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            updateSummaryDashboard() {
+                const stats = this.db.getSummaryStats();
+                
+                document.getElementById('currentTempSummary').textContent = stats.currentTemp.toFixed(1) + '°C';
+                document.getElementById('currentPhSummary').textContent = stats.currentPh.toFixed(1);
+                document.getElementById('tempDeviation').textContent = (stats.tempDeviation > 0 ? '+' : '') + stats.tempDeviation.toFixed(1) + '°C';
+                document.getElementById('phDeviation').textContent = (stats.phDeviation > 0 ? '+' : '') + stats.phDeviation.toFixed(2);
+
+                // Update distribution chart dengan data yang lebih realistis
+                this.updateDistributionChart();
+            }
+
+            updateDistributionChart() {
+                // Generate data distribusi yang lebih realistis
+                const optimal = Math.floor(Math.random() * 20) + 70; // 70-90%
+                const warning = Math.floor(Math.random() * 15) + 5;  // 5-20%  
+                const danger = Math.floor(Math.random() * 5) + 1;    // 1-5%
+
+                this.distributionChart.data.datasets[0].data = [optimal, warning, danger];
+                this.distributionChart.data.labels = [
+                    `Optimal (${optimal}%)`, 
+                    `Perhatian (${warning}%)`, 
+                    `Bahaya (${danger}%)`
+                ];
+                
+                // Update colors untuk memastikan tidak hitam
+                this.distributionChart.data.datasets[0].backgroundColor = [
+                    '#4caf50', // Hijau - Optimal
+                    '#ffb300', // Kuning - Perhatian
+                    '#f44336'  // Merah - Bahaya
+                ];
+                
+                this.distributionChart.update('none');
+            }
+
+            generateDemoData() {
+                this.showToast('Memulai generasi data demo...');
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        this.generateNewData();
+                        if (i === 9) this.showToast('Generasi data demo selesai!');
+                    }, i * 500);
+                }
+            }
+
+            startAutoRefresh() {
+                this.autoRefreshInterval = setInterval(() => {
+                    this.generateNewData();
+                }, 15000);
+            }
+
+            toggleAutoRefresh() {
+                this.autoRefreshEnabled = !this.autoRefreshEnabled;
+                const btn = document.getElementById('autoRefreshBtn');
+
+                if (this.autoRefreshEnabled) {
+                    btn.innerHTML = '<i class="fas fa-pause"></i> Jeda';
+                    btn.className = 'btn btn-warning';
+                    this.startAutoRefresh();
+                    this.startCountdown();
+                    this.showToast('Auto-refresh diaktifkan');
+                } else {
+                    btn.innerHTML = '<i class="fas fa-play"></i> Mulai';
+                    btn.className = 'btn btn-success';
+                    clearInterval(this.autoRefreshInterval);
+                    clearInterval(this.countdownInterval);
+                    document.getElementById('countdown').textContent = 'Jeda';
+                    this.showToast('Auto-refresh dimatikan');
+                }
+            }
+
+            startCountdown() {
+                this.countdown = 15;
+                this.updateCountdown();
+
+                this.countdownInterval = setInterval(() => {
+                    this.countdown--;
+                    this.updateCountdown();
+
+                    if (this.countdown <= 0) {
+                        this.countdown = 15;
+                    }
+                }, 1000);
+            }
+
+            updateCountdown() {
+                const countdownElem = document.getElementById('countdown');
+                countdownElem.textContent = this.countdown;
+                
+                if (this.countdown <= 5) {
+                    countdownElem.style.color = 'var(--danger-500)';
+                } else if (this.countdown <= 10) {
+                    countdownElem.style.color = 'var(--warning-500)';
+                } else {
+                    countdownElem.style.color = 'var(--success-500)';
+                }
+            }
+
+            showToast(message) {
+                const toast = document.getElementById('notificationToast');
+                const toastMessage = document.getElementById('toastMessage');
+                
+                toastMessage.textContent = message;
+                toast.style.display = 'block';
+                
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 3000);
             }
         }
 
-        function addWhatsAppLog(message) {
-            const logContainer = document.getElementById('whatsapp-log');
-            const logEntry = document.createElement('div');
-            logEntry.className = 'log-entry';
-            logEntry.innerHTML = `
-                <i class="fab fa-whatsapp" style="color: #25D366;"></i>
-                <strong>[${new Date().toLocaleTimeString()}]</strong> ${message}
-            `;
-            logContainer.insertBefore(logEntry, logContainer.firstChild);
-        }
-
-        // Auto refresh
-        function startAutoRefresh() {
-            if (!autoRefreshInterval) {
-                autoRefreshInterval = setInterval(() => generateNormalData(), 15000);
-                isAutoRefresh = true;
-                updateAutoRefreshButton();
-            }
-        }
-
-        function toggleAutoRefresh() {
-            if (isAutoRefresh) {
-                clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-                isAutoRefresh = false;
-            } else {
-                startAutoRefresh();
-            }
-            updateAutoRefreshButton();
-        }
-
-        function updateAutoRefreshButton() {
-            const btn = document.getElementById('auto-refresh-btn');
-            if (isAutoRefresh) {
-                btn.innerHTML = '<i class="fas fa-pause"></i> Stop Auto';
-                btn.className = 'btn btn-warning';
-            } else {
-                btn.innerHTML = '<i class="fas fa-play"></i> Auto Refresh';
-                btn.className = 'btn btn-success';
-            }
-        }
-
-        // Tab switching
-        function switchTab(tabName) {
-            document.getElementById('realtime-tab').classList.add('hidden');
-            document.getElementById('daily-tab').classList.add('hidden');
-            document.getElementById('notifications-tab').classList.add('hidden');
-            
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            document.getElementById(tabName + '-tab').classList.remove('hidden');
-            event.target.classList.add('active');
-
-            if (tabName === 'daily') {
-                updateDailyAnalysis();
-            }
-        }
-
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-            
-            // Set default date to today
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('daily-date').value = today;
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app = new TimeBasedMonitoringApp();
         });
     </script>
 </body>
