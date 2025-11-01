@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaSense Pro - Monitoring Tambak</title>
+    <title>AquaSense Pro - Monitoring 3 Tambak</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -23,6 +23,9 @@
             --light: #f5f5f5;
             --dark: #212121;
             --gray: #757575;
+            --tambak1: #2196f3;
+            --tambak2: #009688;
+            --tambak3: #ff9800;
         }
 
         body {
@@ -34,7 +37,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -52,11 +55,6 @@
             color: var(--primary);
             margin-bottom: 10px;
             font-size: 2.5em;
-        }
-
-        .header p {
-            color: var(--gray);
-            font-size: 1.1em;
         }
 
         .tabs {
@@ -87,6 +85,45 @@
             box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
         }
 
+        .pond-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .pond-btn {
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--tambak1);
+        }
+
+        .pond-btn.active {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .pond-btn.tambak1.active { border-left-color: var(--tambak1); background: #e3f2fd; }
+        .pond-btn.tambak2.active { border-left-color: var(--tambak2); background: #e0f2f1; }
+        .pond-btn.tambak3.active { border-left-color: var(--tambak3); background: #fff3e0; }
+
+        .pond-btn .pond-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .pond-btn .pond-status {
+            font-size: 0.9em;
+            color: var(--gray);
+        }
+
         .dashboard {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -96,6 +133,9 @@
 
         @media (max-width: 768px) {
             .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .pond-selector {
                 grid-template-columns: 1fr;
             }
         }
@@ -133,6 +173,7 @@
         .metric-label {
             color: var(--gray);
             font-size: 1.1em;
+            margin-bottom: 10px;
         }
 
         .status {
@@ -165,7 +206,7 @@
 
         .controls {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
             gap: 15px;
             margin-bottom: 25px;
         }
@@ -199,6 +240,16 @@
             color: white;
         }
 
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-info {
+            background: var(--secondary);
+            color: white;
+        }
+
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.15);
@@ -228,10 +279,6 @@
             font-weight: 600;
         }
 
-        .data-table tr:hover {
-            background: #f9f9f9;
-        }
-
         .badge {
             padding: 5px 12px;
             border-radius: 15px;
@@ -242,6 +289,9 @@
         .badge-success { background: #e8f5e8; color: var(--success); }
         .badge-warning { background: #fff8e1; color: var(--warning); }
         .badge-danger { background: #ffebee; color: var(--danger); }
+        .badge-tambak1 { background: #e3f2fd; color: var(--tambak1); }
+        .badge-tambak2 { background: #e0f2f1; color: var(--tambak2); }
+        .badge-tambak3 { background: #fff3e0; color: var(--tambak3); }
 
         .log-container {
             max-height: 200px;
@@ -281,7 +331,7 @@
             color: var(--dark);
         }
 
-        .setting-item input {
+        .setting-item input, .setting-item textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
@@ -293,6 +343,27 @@
             display: none;
         }
 
+        .whatsapp-demo {
+            background: #25D366;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .status-online { border-left: 4px solid var(--success); }
+        .status-offline { border-left: 4px solid var(--danger); }
+
         .daily-controls {
             display: flex;
             gap: 15px;
@@ -302,7 +373,7 @@
 
         .summary-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
             margin: 20px 0;
         }
@@ -325,37 +396,124 @@
             color: var(--gray);
             font-size: 0.9em;
         }
+
+        .pond-overview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .pond-mini-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--tambak1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pond-mini-card.tambak1 { border-left-color: var(--tambak1); }
+        .pond-mini-card.tambak2 { border-left-color: var(--tambak2); }
+        .pond-mini-card.tambak3 { border-left-color: var(--tambak3); }
+
+        .pond-mini-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .pond-mini-card.active {
+            background: #e3f2fd;
+        }
+
+        .pond-mini-card .pond-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .pond-mini-card .pond-metric {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .pond-mini-card .pond-status {
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <h1><i class="fas fa-water"></i> AquaSense Pro</h1>
-            <p>Sistem Monitoring Tambak Cerdas Berbasis IoT</p>
+            <p>Sistem Monitoring 3 Tambak dengan Notifikasi WhatsApp</p>
         </div>
 
-        <!-- Tabs -->
         <div class="tabs">
             <button class="tab active" onclick="switchTab('realtime')">
                 <i class="fas fa-clock"></i> Real-time
             </button>
-            <button class="tab" onclick="switchTab('hourly')">
-                <i class="fas fa-chart-bar"></i> Per Jam
-            </button>
             <button class="tab" onclick="switchTab('daily')">
                 <i class="fas fa-calendar-day"></i> Harian
             </button>
+            <button class="tab" onclick="switchTab('notifications')">
+                <i class="fas fa-bell"></i> Notifikasi
+            </button>
+        </div>
+
+        <!-- Overview 3 Tambak -->
+        <div class="pond-overview">
+            <div class="pond-mini-card tambak1 active" onclick="selectPond(1)">
+                <div class="pond-name">Tambak 1 - Udang Vaname</div>
+                <div class="pond-metric" id="overview-temp-1">28.5°C</div>
+                <div class="pond-metric" id="overview-ph-1">7.2</div>
+                <div class="pond-status" id="overview-status-1">
+                    <span class="badge badge-success">OPTIMAL</span>
+                </div>
+            </div>
+            <div class="pond-mini-card tambak2" onclick="selectPond(2)">
+                <div class="pond-name">Tambak 2 - Bandeng</div>
+                <div class="pond-metric" id="overview-temp-2">29.1°C</div>
+                <div class="pond-metric" id="overview-ph-2">7.4</div>
+                <div class="pond-status" id="overview-status-2">
+                    <span class="badge badge-success">OPTIMAL</span>
+                </div>
+            </div>
+            <div class="pond-mini-card tambak3" onclick="selectPond(3)">
+                <div class="pond-name">Tambak 3 - Nila</div>
+                <div class="pond-metric" id="overview-temp-3">27.8°C</div>
+                <div class="pond-metric" id="overview-ph-3">7.0</div>
+                <div class="pond-status" id="overview-status-3">
+                    <span class="badge badge-warning">PERHATIAN</span>
+                </div>
+            </div>
         </div>
 
         <!-- Real-time Dashboard -->
         <div id="realtime-tab">
-            <!-- Stats -->
+            <div class="pond-selector">
+                <button class="pond-btn tambak1 active" onclick="selectPond(1)">
+                    <div class="pond-name">Tambak 1 - Udang Vaname</div>
+                    <div class="pond-status">Luas: 1000m² | Kapasitas: 10,000 ekor</div>
+                </button>
+                <button class="pond-btn tambak2" onclick="selectPond(2)">
+                    <div class="pond-name">Tambak 2 - Bandeng</div>
+                    <div class="pond-status">Luas: 800m² | Kapasitas: 5,000 ekor</div>
+                </button>
+                <button class="pond-btn tambak3" onclick="selectPond(3)">
+                    <div class="pond-name">Tambak 3 - Nila</div>
+                    <div class="pond-status">Luas: 600m² | Kapasitas: 8,000 ekor</div>
+                </button>
+            </div>
+
             <div class="dashboard">
                 <div class="card metric-card">
                     <h3><i class="fas fa-thermometer-half"></i> Suhu Saat Ini</h3>
                     <div class="metric-value" id="current-temp">28.5°C</div>
-                    <div class="metric-label">Tambak 1</div>
+                    <div class="metric-label" id="current-pond">Tambak 1 - Udang Vaname</div>
                     <div class="status">
                         <div class="status-dot status-normal"></div>
                         <span>Kondisi Optimal</span>
@@ -365,7 +523,7 @@
                 <div class="card metric-card">
                     <h3><i class="fas fa-tint"></i> pH Saat Ini</h3>
                     <div class="metric-value" id="current-ph">7.2</div>
-                    <div class="metric-label">Tambak 1</div>
+                    <div class="metric-label" id="current-pond-ph">Tambak 1 - Udang Vaname</div>
                     <div class="status">
                         <div class="status-dot status-normal"></div>
                         <span>Kondisi Optimal</span>
@@ -373,20 +531,24 @@
                 </div>
             </div>
 
-            <!-- Controls -->
             <div class="controls">
-                <button class="btn btn-primary" onclick="generateData()">
-                    <i class="fas fa-plus"></i> Generate Data
+                <button class="btn btn-primary" onclick="generateNormalData()">
+                    <i class="fas fa-check"></i> Data Normal
+                </button>
+                <button class="btn btn-warning" onclick="generateWarningData()">
+                    <i class="fas fa-exclamation-triangle"></i> Data Warning
+                </button>
+                <button class="btn btn-danger" onclick="generateDangerData()">
+                    <i class="fas fa-skull-crossbones"></i> Data Danger
                 </button>
                 <button class="btn btn-success" id="auto-refresh-btn" onclick="toggleAutoRefresh()">
                     <i class="fas fa-play"></i> Auto Refresh
                 </button>
             </div>
 
-            <!-- Charts and Data -->
             <div class="dashboard">
                 <div class="card">
-                    <h3><i class="fas fa-chart-line"></i> Trend 15 Menit</h3>
+                    <h3><i class="fas fa-chart-line"></i> Trend Data 15 Menit</h3>
                     <div class="chart-container">
                         <canvas id="trend-chart"></canvas>
                     </div>
@@ -398,70 +560,22 @@
                         <thead>
                             <tr>
                                 <th>Waktu</th>
+                                <th>Tambak</th>
                                 <th>Suhu</th>
                                 <th>pH</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="recent-data">
-                            <!-- Data akan diisi oleh JavaScript -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Log and Recommendations -->
-            <div class="dashboard">
-                <div class="card">
-                    <h3><i class="fas fa-database"></i> Log Sistem</h3>
-                    <div class="log-container" id="system-log">
-                        <div class="log-entry">Sistem dimulai - Monitoring aktif</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3><i class="fas fa-robot"></i> Rekomendasi AI</h3>
-                    <div id="ai-recommendation">
-                        <div class="log-entry">
-                            <strong>Status Optimal:</strong> Semua parameter dalam kondisi normal. Lanjutkan monitoring rutin.
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notification Settings -->
             <div class="card">
-                <h3><i class="fas fa-bell"></i> Pengaturan Notifikasi</h3>
-                <div class="notification-settings">
-                    <div class="setting-item">
-                        <label>Telegram Chat ID:</label>
-                        <input type="text" id="telegram-chat-id" placeholder="123456789" value="123456789">
-                    </div>
-                    <div class="setting-item">
-                        <label>WhatsApp Number:</label>
-                        <input type="text" id="whatsapp-number" placeholder="628123456789" value="628123456789">
-                    </div>
-                    <button class="btn btn-primary" onclick="saveSettings()">
-                        <i class="fas fa-save"></i> Simpan Pengaturan
-                    </button>
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button class="btn btn-success" onclick="testTelegram()">
-                            <i class="fab fa-telegram"></i> Test Telegram
-                        </button>
-                        <button class="btn btn-success" onclick="testWhatsApp()">
-                            <i class="fab fa-whatsapp"></i> Test WhatsApp
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Hourly Analysis Tab -->
-        <div id="hourly-tab" class="hidden">
-            <div class="card">
-                <h3><i class="fas fa-chart-bar"></i> Analisis Data Per Jam</h3>
-                <div class="chart-container">
-                    <canvas id="hourly-chart"></canvas>
+                <h3><i class="fas fa-database"></i> Log Sistem & Notifikasi</h3>
+                <div class="log-container" id="system-log">
+                    <div class="log-entry">Sistem dimulai - Monitoring 3 tambak aktif</div>
                 </div>
             </div>
         </div>
@@ -472,6 +586,14 @@
                 <h3><i class="fas fa-calendar-day"></i> Analisis Data Harian</h3>
                 
                 <div class="daily-controls">
+                    <div>
+                        <label>Pilih Tambak:</label>
+                        <select id="daily-pond" onchange="updateDailyAnalysis()" style="padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="1">Tambak 1 - Udang Vaname</option>
+                            <option value="2">Tambak 2 - Bandeng</option>
+                            <option value="3">Tambak 3 - Nila</option>
+                        </select>
+                    </div>
                     <input type="date" id="daily-date" onchange="updateDailyAnalysis()">
                     <button class="btn btn-primary" onclick="downloadDailyReport()">
                         <i class="fas fa-download"></i> Download Laporan
@@ -488,7 +610,7 @@
                         <div class="summary-value" id="daily-avg-ph">7.2</div>
                     </div>
                     <div class="summary-item">
-                        <div class="summary-label">Status</div>
+                        <div class="summary-label">Status Harian</div>
                         <div class="summary-value">
                             <span class="badge badge-success">OPTIMAL</span>
                         </div>
@@ -504,7 +626,7 @@
                 </div>
 
                 <div style="margin-top: 20px;">
-                    <h4>Data 15 Menit</h4>
+                    <h4>Data 15 Menit - <span id="daily-pond-name">Tambak 1</span></h4>
                     <div style="max-height: 300px; overflow-y: auto;">
                         <table class="data-table">
                             <thead>
@@ -513,12 +635,87 @@
                                     <th>Suhu</th>
                                     <th>pH</th>
                                     <th>Status</th>
+                                    <th>Analisis</th>
                                 </tr>
                             </thead>
                             <tbody id="daily-data">
-                                <!-- Data akan diisi -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Tab -->
+        <div id="notifications-tab" class="hidden">
+            <div class="card">
+                <h3><i class="fab fa-whatsapp"></i> Notifikasi WhatsApp</h3>
+                
+                <div class="api-status status-online">
+                    <i class="fas fa-circle" style="color: #4caf50;"></i>
+                    <span>WhatsApp API: <strong>READY</strong> - Sistem dapat mengirim notifikasi</span>
+                </div>
+
+                <div class="notification-settings">
+                    <h4 style="margin-bottom: 20px; color: var(--primary);">
+                        <i class="fas fa-cog"></i> Konfigurasi WhatsApp
+                    </h4>
+                    
+                    <div class="setting-item">
+                        <label><i class="fas fa-phone"></i> Nomor WhatsApp Tujuan</label>
+                        <input type="text" id="whatsapp-number" 
+                               placeholder="Contoh: 628123456789 (tanpa +)" 
+                               value="628123456789">
+                        <small style="color: var(--gray);">Gunakan format internasional tanpa +</small>
+                    </div>
+
+                    <div class="setting-item">
+                        <label><i class="fas fa-edit"></i> Pesan Default</label>
+                        <textarea id="whatsapp-message" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+🚨 PERINGATAN AQUASENSE PRO 🚨
+
+Tambak: {tambak}
+Parameter di luar batas normal!
+Suhu: {suhu}°C | pH: {ph}
+Status: {status}
+Waktu: {waktu}
+
+Segera periksa kondisi tambak!
+                        </textarea>
+                    </div>
+
+                    <button class="btn btn-success" onclick="saveWhatsAppSettings()" style="width: 100%;">
+                        <i class="fas fa-save"></i> Simpan Pengaturan WhatsApp
+                    </button>
+                </div>
+
+                <div class="whatsapp-demo">
+                    <h4><i class="fab fa-whatsapp"></i> Test Notifikasi WhatsApp</h4>
+                    <p>Test pengiriman notifikasi ke nomor WhatsApp yang telah dikonfigurasi:</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <button class="btn" style="background: white; color: #25D366;" 
+                                onclick="testWhatsApp('normal')">
+                            <i class="fas fa-check"></i> Test Normal
+                        </button>
+                        <button class="btn" style="background: white; color: #ffb300;" 
+                                onclick="testWhatsApp('warning')">
+                            <i class="fas fa-exclamation-triangle"></i> Test Warning
+                        </button>
+                        <button class="btn" style="background: white; color: #f44336;" 
+                                onclick="testWhatsApp('danger')">
+                            <i class="fas fa-skull-crossbones"></i> Test Danger
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <h4><i class="fas fa-history"></i> Riwayat Notifikasi</h4>
+                    <div class="log-container">
+                        <div class="log-entry" id="whatsapp-log">
+                            <i class="fab fa-whatsapp" style="color: #25D366;"></i>
+                            Belum ada notifikasi yang dikirim
+                        </div>
                     </div>
                 </div>
             </div>
@@ -526,41 +723,71 @@
     </div>
 
     <script>
-        // Inisialisasi variabel global
+        // Variabel global
         let autoRefreshInterval;
         let isAutoRefresh = false;
-        let dataHistory = [];
+        let currentPond = 1;
+        let dataHistory = {1: [], 2: [], 3: []};
         let charts = {};
+        let whatsappSettings = {
+            number: '628123456789',
+            message: `🚨 PERINGATAN AQUASENSE PRO 🚨
 
-        // Data contoh untuk demo
-        const sampleData = [
-            { time: '14:00', temp: 28.5, ph: 7.2, status: 'normal' },
-            { time: '13:45', temp: 28.7, ph: 7.1, status: 'normal' },
-            { time: '13:30', temp: 29.0, ph: 7.3, status: 'normal' },
-            { time: '13:15', temp: 28.8, ph: 7.2, status: 'normal' },
-            { time: '13:00', temp: 28.6, ph: 7.4, status: 'normal' }
-        ];
+Tambak: {tambak}
+Parameter di luar batas normal!
+Suhu: {suhu}°C | pH: {ph}
+Status: {status}
+Waktu: {waktu}
 
-        // Fungsi inisialisasi
+Segera periksa kondisi tambak!`
+        };
+
+        // Data awal untuk 3 tambak
+        const initialData = {
+            1: [ // Tambak 1 - Udang Vaname
+                { time: '14:00', temp: 28.5, ph: 7.2, status: 'normal' },
+                { time: '13:45', temp: 28.7, ph: 7.1, status: 'normal' },
+                { time: '13:30', temp: 29.0, ph: 7.3, status: 'normal' }
+            ],
+            2: [ // Tambak 2 - Bandeng
+                { time: '14:00', temp: 29.1, ph: 7.4, status: 'normal' },
+                { time: '13:45', temp: 29.3, ph: 7.3, status: 'normal' },
+                { time: '13:30', temp: 28.9, ph: 7.5, status: 'normal' }
+            ],
+            3: [ // Tambak 3 - Nila
+                { time: '14:00', temp: 27.8, ph: 7.0, status: 'warning' },
+                { time: '13:45', temp: 27.5, ph: 6.9, status: 'warning' },
+                { time: '13:30', temp: 27.9, ph: 7.1, status: 'normal' }
+            ]
+        };
+
+        const pondNames = {
+            1: 'Tambak 1 - Udang Vaname',
+            2: 'Tambak 2 - Bandeng', 
+            3: 'Tambak 3 - Nila'
+        };
+
+        // Inisialisasi aplikasi
         function initializeApp() {
             initializeCharts();
-            loadSampleData();
+            loadInitialData();
             updateDisplay();
+            loadSettings();
             startAutoRefresh();
+            updateOverview();
         }
 
-        // Inisialisasi chart
         function initializeCharts() {
             // Trend Chart
             const trendCtx = document.getElementById('trend-chart').getContext('2d');
             charts.trend = new Chart(trendCtx, {
                 type: 'line',
                 data: {
-                    labels: sampleData.map(d => d.time).reverse(),
+                    labels: initialData[1].map(d => d.time).reverse(),
                     datasets: [
                         {
                             label: 'Suhu (°C)',
-                            data: sampleData.map(d => d.temp).reverse(),
+                            data: initialData[1].map(d => d.temp).reverse(),
                             borderColor: '#2196f3',
                             backgroundColor: 'rgba(33, 150, 243, 0.1)',
                             tension: 0.4,
@@ -568,11 +795,12 @@
                         },
                         {
                             label: 'pH',
-                            data: sampleData.map(d => d.ph).reverse(),
+                            data: initialData[1].map(d => d.ph).reverse(),
                             borderColor: '#009688',
                             backgroundColor: 'rgba(0, 150, 136, 0.1)',
                             tension: 0.4,
-                            fill: true
+                            fill: true,
+                            yAxisID: 'y1'
                         }
                     ]
                 },
@@ -581,34 +809,16 @@
                     maintainAspectRatio: false,
                     scales: {
                         y: {
-                            beginAtZero: false
+                            beginAtZero: false,
+                            title: { display: true, text: 'Suhu (°C)' }
+                        },
+                        y1: {
+                            beginAtZero: false,
+                            position: 'right',
+                            title: { display: true, text: 'pH' },
+                            grid: { drawOnChartArea: false }
                         }
                     }
-                }
-            });
-
-            // Hourly Chart
-            const hourlyCtx = document.getElementById('hourly-chart').getContext('2d');
-            charts.hourly = new Chart(hourlyCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
-                    datasets: [
-                        {
-                            label: 'Suhu Rata-rata',
-                            data: [28.2, 27.8, 29.1, 30.2, 29.5, 28.8],
-                            backgroundColor: '#2196f3'
-                        },
-                        {
-                            label: 'pH Rata-rata',
-                            data: [7.1, 7.0, 7.3, 7.4, 7.2, 7.1],
-                            backgroundColor: '#009688'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
                 }
             });
 
@@ -642,84 +852,139 @@
             });
         }
 
-        // Load data contoh
-        function loadSampleData() {
-            dataHistory = [...sampleData];
+        function loadInitialData() {
+            dataHistory = JSON.parse(JSON.stringify(initialData));
         }
 
-        // Generate data baru
-        function generateData() {
+        function loadSettings() {
+            const saved = localStorage.getItem('whatsappSettings');
+            if (saved) {
+                whatsappSettings = JSON.parse(saved);
+                document.getElementById('whatsapp-number').value = whatsappSettings.number;
+                document.getElementById('whatsapp-message').value = whatsappSettings.message;
+            }
+        }
+
+        function saveWhatsAppSettings() {
+            whatsappSettings.number = document.getElementById('whatsapp-number').value;
+            whatsappSettings.message = document.getElementById('whatsapp-message').value;
+            localStorage.setItem('whatsappSettings', JSON.stringify(whatsappSettings));
+            addLog('Pengaturan WhatsApp disimpan');
+            alert('✅ Pengaturan WhatsApp berhasil disimpan!');
+        }
+
+        // Fungsi select pond
+        function selectPond(pondNumber) {
+            currentPond = pondNumber;
+            
+            // Update UI selection
+            document.querySelectorAll('.pond-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.pond-mini-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            document.querySelector(`.pond-btn.tambak${pondNumber}`).classList.add('active');
+            document.querySelector(`.pond-mini-card.tambak${pondNumber}`).classList.add('active');
+            
+            updateDisplay();
+        }
+
+        // Fungsi generate data dengan status berbeda
+        function generateNormalData() {
+            const temp = 28 + Math.random() * 2;
+            const ph = 7.0 + Math.random() * 0.6;
+            generateData(temp, ph, 'normal');
+        }
+
+        function generateWarningData() {
+            const temp = 31 + Math.random() * 2;
+            const ph = 7.8 + Math.random() * 0.4;
+            generateData(temp, ph, 'warning');
+        }
+
+        function generateDangerData() {
+            const temp = 33 + Math.random() * 2;
+            const ph = 8.2 + Math.random() * 0.8;
+            generateData(temp, ph, 'danger');
+        }
+
+        function generateData(temp, ph, status) {
             const now = new Date();
             const timeString = now.getHours().toString().padStart(2, '0') + ':' + 
                              now.getMinutes().toString().padStart(2, '0');
             
-            // Generate data acak yang realistis
-            const newTemp = (28 + Math.random() * 3 - 1.5).toFixed(1);
-            const newPh = (7.0 + Math.random() * 0.8 - 0.4).toFixed(1);
-            
-            // Tentukan status berdasarkan nilai
-            let status = 'normal';
-            if (newTemp < 27 || newTemp > 31 || newPh < 6.8 || newPh > 7.8) {
-                status = 'warning';
-            }
-            if (newTemp < 26 || newTemp > 32 || newPh < 6.5 || newPh > 8.2) {
-                status = 'danger';
-            }
-
             const newData = {
                 time: timeString,
-                temp: parseFloat(newTemp),
-                ph: parseFloat(newPh),
+                temp: parseFloat(temp.toFixed(1)),
+                ph: parseFloat(ph.toFixed(1)),
                 status: status
             };
 
-            // Tambah ke history
-            dataHistory.unshift(newData);
-            if (dataHistory.length > 10) {
-                dataHistory = dataHistory.slice(0, 10);
+            // Add to current pond history
+            dataHistory[currentPond].unshift(newData);
+            if (dataHistory[currentPond].length > 10) {
+                dataHistory[currentPond] = dataHistory[currentPond].slice(0, 10);
             }
 
             updateDisplay();
-            addLog(`Data baru: ${newTemp}°C, pH ${newPh} - ${status.toUpperCase()}`);
+            updateOverview();
+            addLog(`Tambak ${currentPond}: ${temp.toFixed(1)}°C, pH ${ph.toFixed(1)} - ${status.toUpperCase()}`);
 
-            // Check untuk notifikasi
-            checkAlerts(newData);
+            // Kirim notifikasi jika status warning atau danger
+            if (status !== 'normal') {
+                sendWhatsAppNotification(newData, currentPond);
+            }
         }
 
-        // Update display
         function updateDisplay() {
-            if (dataHistory.length > 0) {
-                const latest = dataHistory[0];
+            const currentData = dataHistory[currentPond];
+            if (currentData.length > 0) {
+                const latest = currentData[0];
                 
                 // Update metrics
                 document.getElementById('current-temp').textContent = latest.temp + '°C';
                 document.getElementById('current-ph').textContent = latest.ph;
+                document.getElementById('current-pond').textContent = pondNames[currentPond];
+                document.getElementById('current-pond-ph').textContent = pondNames[currentPond];
                 
                 // Update status
                 updateStatus('current-temp', latest.status);
                 updateStatus('current-ph', latest.status);
                 
-                // Update table
+                // Update table and chart
                 updateDataTable();
-                
-                // Update charts
-                updateCharts();
-                
-                // Update rekomendasi AI
-                updateAIRecommendation(latest);
+                updateChart();
             }
         }
 
-        // Update status indicator
+        function updateOverview() {
+            // Update overview untuk semua tambak
+            for (let pond = 1; pond <= 3; pond++) {
+                const data = dataHistory[pond];
+                if (data.length > 0) {
+                    const latest = data[0];
+                    document.getElementById(`overview-temp-${pond}`).textContent = latest.temp + '°C';
+                    document.getElementById(`overview-ph-${pond}`).textContent = latest.ph;
+                    
+                    let badgeClass = 'badge-success';
+                    if (latest.status === 'warning') badgeClass = 'badge-warning';
+                    if (latest.status === 'danger') badgeClass = 'badge-danger';
+                    
+                    document.getElementById(`overview-status-${pond}`).innerHTML = 
+                        `<span class="badge ${badgeClass}">${latest.status.toUpperCase()}</span>`;
+                }
+            }
+        }
+
         function updateStatus(metricId, status) {
             const metricCard = document.getElementById(metricId).closest('.metric-card');
             const statusElement = metricCard.querySelector('.status');
             const dot = statusElement.querySelector('.status-dot');
             const text = statusElement.querySelector('span');
             
-            // Reset classes
             dot.className = 'status-dot';
-            statusElement.style.background = '#f5f5f5';
             
             switch(status) {
                 case 'normal':
@@ -740,19 +1005,37 @@
             }
         }
 
-        // Update data table
         function updateDataTable() {
             const tbody = document.getElementById('recent-data');
             tbody.innerHTML = '';
             
-            dataHistory.forEach(data => {
+            // Show data from all ponds, latest first
+            const allData = [];
+            for (let pond = 1; pond <= 3; pond++) {
+                dataHistory[pond].forEach(data => {
+                    allData.push({
+                        ...data,
+                        pond: pond,
+                        pondName: pondNames[pond]
+                    });
+                });
+            }
+            
+            // Sort by time (newest first) and take top 10
+            allData.sort((a, b) => b.time.localeCompare(a.time));
+            const recentData = allData.slice(0, 10);
+            
+            recentData.forEach(data => {
                 const row = document.createElement('tr');
                 let badgeClass = 'badge-success';
                 if (data.status === 'warning') badgeClass = 'badge-warning';
                 if (data.status === 'danger') badgeClass = 'badge-danger';
                 
+                let pondBadgeClass = `badge-tambak${data.pond}`;
+                
                 row.innerHTML = `
                     <td>${data.time}</td>
+                    <td><span class="badge ${pondBadgeClass}">${data.pondName}</span></td>
                     <td>${data.temp}°C</td>
                     <td>${data.ph}</td>
                     <td><span class="badge ${badgeClass}">${data.status.toUpperCase()}</span></td>
@@ -761,48 +1044,130 @@
             });
         }
 
-        // Update charts
-        function updateCharts() {
-            if (charts.trend) {
-                charts.trend.data.labels = dataHistory.map(d => d.time).reverse();
-                charts.trend.data.datasets[0].data = dataHistory.map(d => d.temp).reverse();
-                charts.trend.data.datasets[1].data = dataHistory.map(d => d.ph).reverse();
+        function updateChart() {
+            if (charts.trend && dataHistory[currentPond].length > 0) {
+                const currentData = dataHistory[currentPond];
+                charts.trend.data.labels = currentData.map(d => d.time).reverse();
+                charts.trend.data.datasets[0].data = currentData.map(d => d.temp).reverse();
+                charts.trend.data.datasets[1].data = currentData.map(d => d.ph).reverse();
                 charts.trend.update();
             }
         }
 
-        // Update AI recommendation
-        function updateAIRecommendation(data) {
-            const recommendationDiv = document.getElementById('ai-recommendation');
-            let recommendation = '';
+        // FUNGSI WHATSAPP NYATA
+        function sendWhatsAppNotification(data, pondNumber) {
+            const phoneNumber = whatsappSettings.number;
+            let message = whatsappSettings.message
+                .replace('{tambak}', pondNames[pondNumber])
+                .replace('{suhu}', data.temp)
+                .replace('{ph}', data.ph)
+                .replace('{status}', data.status.toUpperCase())
+                .replace('{waktu}', new Date().toLocaleString('id-ID'));
+
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
             
-            if (data.status === 'normal') {
-                recommendation = `
-                    <div class="log-entry">
-                        <strong>Status Optimal:</strong> Semua parameter dalam kondisi normal. 
-                        Lanjutkan monitoring rutin dan pertahankan kondisi saat ini.
-                    </div>
-                `;
-            } else if (data.status === 'warning') {
-                recommendation = `
-                    <div class="log-entry">
-                        <strong>Perhatian Diperlukan:</strong> Parameter mendekati batas kritis. 
-                        Monitor secara ketat dan siapkan tindakan korektif jika diperlukan.
-                    </div>
-                `;
-            } else {
-                recommendation = `
-                    <div class="log-entry">
-                        <strong>Tindakan Segera!</strong> Parameter di luar batas aman. 
-                        Segera lakukan tindakan korektif untuk mengembalikan kondisi optimal.
-                    </div>
-                `;
-            }
-            
-            recommendationDiv.innerHTML = recommendation;
+            openWhatsApp(whatsappUrl, message, data.status, pondNumber);
         }
 
-        // Add log entry
+        function openWhatsApp(url, message, status, pondNumber) {
+            const newWindow = window.open(url, '_blank');
+            
+            if (newWindow) {
+                addWhatsAppLog(`✅ Notifikasi ${status.toUpperCase()} untuk ${pondNames[pondNumber]} dikirim via WhatsApp`);
+                addLog(`WhatsApp: Notifikasi ${status} untuk Tambak ${pondNumber} terkirim`);
+            } else {
+                addWhatsAppLog('❌ Gagal membuka WhatsApp. Pastikan pop-up diizinkan.');
+            }
+        }
+
+        function testWhatsApp(type) {
+            let testData, testPond;
+            switch(type) {
+                case 'normal':
+                    testData = { temp: 28.5, ph: 7.2, status: 'normal' };
+                    testPond = 1;
+                    break;
+                case 'warning':
+                    testData = { temp: 31.5, ph: 7.9, status: 'warning' };
+                    testPond = 2;
+                    break;
+                case 'danger':
+                    testData = { temp: 33.5, ph: 8.5, status: 'danger' };
+                    testPond = 3;
+                    break;
+            }
+            
+            addWhatsAppLog(`📱 Mengirim test notifikasi ${type.toUpperCase()} untuk ${pondNames[testPond]}...`);
+            sendWhatsAppNotification(testData, testPond);
+        }
+
+        // Daily Analysis Functions
+        function updateDailyAnalysis() {
+            const pond = document.getElementById('daily-pond').value;
+            const date = document.getElementById('daily-date').value;
+            
+            document.getElementById('daily-pond-name').textContent = pondNames[pond];
+            
+            // Update daily data table
+            const dailyTbody = document.getElementById('daily-data');
+            dailyTbody.innerHTML = '';
+            
+            const pondData = dataHistory[pond] || [];
+            pondData.forEach(data => {
+                const row = document.createElement('tr');
+                let badgeClass = 'badge-success';
+                if (data.status === 'warning') badgeClass = 'badge-warning';
+                if (data.status === 'danger') badgeClass = 'badge-danger';
+                
+                let analysis = 'Kondisi optimal';
+                if (data.status === 'warning') analysis = 'Perlu monitoring ketat';
+                if (data.status === 'danger') analysis = 'Perlu tindakan segera';
+                
+                row.innerHTML = `
+                    <td>${data.time}</td>
+                    <td>${data.temp}°C</td>
+                    <td>${data.ph}</td>
+                    <td><span class="badge ${badgeClass}">${data.status.toUpperCase()}</span></td>
+                    <td>${analysis}</td>
+                `;
+                dailyTbody.appendChild(row);
+            });
+        }
+
+        function downloadDailyReport() {
+            const pond = document.getElementById('daily-pond').value;
+            const date = document.getElementById('daily-date').value;
+            const pondData = dataHistory[pond] || [];
+            
+            const report = `
+LAPORAN HARIAN MONITORING TAMBAK
+Tambak: ${pondNames[pond]}
+Tanggal: ${date}
+
+RINGKASAN:
+- Rata-rata Suhu: 28.5°C
+- Rata-rata pH: 7.2
+- Status: OPTIMAL
+- Efisiensi: 92%
+
+DATA DETAIL 15 MENIT:
+${pondData.map(d => `${d.time} - Suhu: ${d.temp}°C, pH: ${d.ph}, Status: ${d.status.toUpperCase()}`).join('\n')}
+
+Dibuat: ${new Date().toLocaleString()}
+            `;
+            
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `laporan-${pondNames[pond].toLowerCase().replace(' ', '-')}-${date}.txt`;
+            a.click();
+            
+            addLog(`Laporan harian ${pondNames[pond]} berhasil diunduh`);
+        }
+
+        // Log functions
         function addLog(message) {
             const logContainer = document.getElementById('system-log');
             const logEntry = document.createElement('div');
@@ -810,37 +1175,26 @@
             logEntry.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
             logContainer.insertBefore(logEntry, logContainer.firstChild);
             
-            // Keep only last 10 entries
             if (logContainer.children.length > 10) {
                 logContainer.removeChild(logContainer.lastChild);
             }
         }
 
-        // Check alerts
-        function checkAlerts(data) {
-            if (data.status === 'danger') {
-                sendAlert(`🚨 BAHAYA! Suhu: ${data.temp}°C, pH: ${data.ph}`);
-            } else if (data.status === 'warning') {
-                sendAlert(`⚠️ PERHATIAN! Suhu: ${data.temp}°C, pH: ${data.ph}`);
-            }
-        }
-
-        // Send alert
-        function sendAlert(message) {
-            const telegramId = document.getElementById('telegram-chat-id').value;
-            const whatsappNumber = document.getElementById('whatsapp-number').value;
-            
-            console.log('🔔 Alert:', message);
-            console.log('📱 Telegram ID:', telegramId);
-            console.log('📱 WhatsApp:', whatsappNumber);
-            
-            addLog(`ALERT: ${message}`);
+        function addWhatsAppLog(message) {
+            const logContainer = document.getElementById('whatsapp-log');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerHTML = `
+                <i class="fab fa-whatsapp" style="color: #25D366;"></i>
+                <strong>[${new Date().toLocaleTimeString()}]</strong> ${message}
+            `;
+            logContainer.insertBefore(logEntry, logContainer.firstChild);
         }
 
         // Auto refresh
         function startAutoRefresh() {
             if (!autoRefreshInterval) {
-                autoRefreshInterval = setInterval(generateData, 10000); // 10 detik
+                autoRefreshInterval = setInterval(() => generateNormalData(), 15000);
                 isAutoRefresh = true;
                 updateAutoRefreshButton();
             }
@@ -870,99 +1224,23 @@
 
         // Tab switching
         function switchTab(tabName) {
-            // Hide all tabs
             document.getElementById('realtime-tab').classList.add('hidden');
-            document.getElementById('hourly-tab').classList.add('hidden');
             document.getElementById('daily-tab').classList.add('hidden');
+            document.getElementById('notifications-tab').classList.add('hidden');
             
-            // Remove active class from all tabs
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             
-            // Show selected tab
             document.getElementById(tabName + '-tab').classList.remove('hidden');
-            
-            // Add active class to clicked tab
             event.target.classList.add('active');
-            
-            // Update daily analysis if switching to daily tab
+
             if (tabName === 'daily') {
                 updateDailyAnalysis();
             }
         }
 
-        // Daily analysis
-        function updateDailyAnalysis() {
-            const date = document.getElementById('daily-date').value;
-            console.log('Updating daily analysis for:', date);
-            
-            // Update daily data table
-            const dailyTbody = document.getElementById('daily-data');
-            dailyTbody.innerHTML = '';
-            
-            sampleData.forEach(data => {
-                const row = document.createElement('tr');
-                let badgeClass = 'badge-success';
-                if (data.status === 'warning') badgeClass = 'badge-warning';
-                if (data.status === 'danger') badgeClass = 'badge-danger';
-                
-                row.innerHTML = `
-                    <td>${data.time}</td>
-                    <td>${data.temp}°C</td>
-                    <td>${data.ph}</td>
-                    <td><span class="badge ${badgeClass}">${data.status.toUpperCase()}</span></td>
-                `;
-                dailyTbody.appendChild(row);
-            });
-        }
-
-        // Download report
-        function downloadDailyReport() {
-            const date = document.getElementById('daily-date').value;
-            const report = `
-LAPORAN HARIAN MONITORING TAMBAK
-Tanggal: ${date}
-
-RINGKASAN:
-- Rata-rata Suhu: 28.5°C
-- Rata-rata pH: 7.2
-- Status: OPTIMAL
-- Efisiensi: 92%
-
-DATA DETAIL:
-${sampleData.map(d => `${d.time} - Suhu: ${d.temp}°C, pH: ${d.ph}, Status: ${d.status.toUpperCase()}`).join('\n')}
-
-Dibuat: ${new Date().toLocaleString()}
-            `;
-            
-            const blob = new Blob([report], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `laporan-tambak-${date}.txt`;
-            a.click();
-            
-            addLog('Laporan harian berhasil diunduh');
-        }
-
-        // Notification functions
-        function saveSettings() {
-            addLog('Pengaturan notifikasi disimpan');
-            alert('Pengaturan berhasil disimpan!');
-        }
-
-        function testTelegram() {
-            addLog('Test notifikasi Telegram dikirim');
-            alert('Test notifikasi Telegram berhasil!');
-        }
-
-        function testWhatsApp() {
-            addLog('Test notifikasi WhatsApp dikirim');
-            alert('Test notifikasi WhatsApp berhasil!');
-        }
-
-        // Initialize app when page loads
+        // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
             
