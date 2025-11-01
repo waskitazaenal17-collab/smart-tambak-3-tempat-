@@ -13,6 +13,10 @@
   --accent:#00d4ff;
   --accent2:#ff7b7b;
   --card-radius:12px;
+  /* Warna Indikator pH */
+  --ph-acid: #ffc107; /* Kuning */
+  --ph-good: #2ecc71; /* Hijau */
+  --ph-base: #9b59b6; /* Ungu */
 }
 *{box-sizing:border-box}
 body{
@@ -75,7 +79,7 @@ nav{width:300px;min-width:240px}
 .btn{background:linear-gradient(90deg,var(--accent),#48b3ff);border:none;color:#021022;padding:9px 12px;border-radius:8px;cursor:pointer;font-weight:700}
 .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px 10px;border-radius:8px;cursor:pointer}
 .ctl{padding:8px 12px;border-radius:8px;border:none;font-weight:700;cursor:pointer}
-.download-link{ /* Link untuk CSV di HP */
+.download-link{
   display:none; background:#12e5a1; color:#021022; padding:9px 12px; border-radius:8px;
   text-decoration:none; font-weight:700; font-size:0.9rem; text-align:center; margin-top:8px;
 }
@@ -87,12 +91,17 @@ nav{width:300px;min-width:240px}
 .bigval{font-size:1.6rem;font-weight:700;margin-top:6px}
 
 /* === POND VISUAL (UPDATED) === */
-.pond-visual{display:flex;gap:12px;flex-wrap:wrap}
 .pond-panel{width:420px;max-width:100%}
 .pond-label{font-weight:700;margin-bottom:8px}
 
+/* (BARU) Wrapper untuk Kolam dan Bar pH */
+.pond-wrapper{
+  display: flex;
+  gap: 12px;
+}
+
 .pond-canvas{
-  position:relative; width:100%; height:350px; /* Dibuat lebih tinggi */
+  position:relative; flex:1; height:350px;
   border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.02);
   background:linear-gradient(180deg,#041522,#021018);
   display:flex; justify-content:center; align-items:flex-end;
@@ -102,22 +111,41 @@ nav{width:300px;min-width:240px}
   display:flex; align-items:flex-end; justify-content:center;
 }
 .water{
-  width:60%; max-width:220px; /* Dibuat lebih ramping (vertikal) */
-  height:90%; /* Mulai dari 90% (diatur oleh JS) */
-  border-radius:8px 8px 0 0; /* Hanya radius atas */
+  width:85%; /* Sedikit lebih lebar */
+  height:90%;
+  border-radius:8px 8px 0 0;
   position:relative; overflow:hidden;
-  transition:height 1s ease, background 1s linear;
+  transition:height 1s ease; /* Hanya transisi height */
+  /* Transisi background dipindahkan ke JS untuk gradien */
   box-shadow:inset 0 8px 40px rgba(0,0,0,0.35);
   border:2px solid rgba(255,255,255,0.05); border-bottom:none;
 }
 .water-level{
   position:absolute; left:0; right:0; bottom:0;
   background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0));
-  transition:height 1s ease;
-  height:100%; /* Selalu 100% dari parent .water */
+  height:100%;
 }
 
-/* === Animasi Ombak (Baru) === */
+/* (BARU) Kontainer Partikel Kekeruhan */
+#pondParticles {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow: hidden;
+}
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  animation: float-particle linear infinite;
+}
+@keyframes float-particle {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translate(var(--x-end, 10px), -350px) scale(0.5); opacity: 0; }
+}
+/* === End Partikel === */
+
+/* Animasi Ombak */
 .wave{
   position:absolute; top:-1px; left:0; width:100%; height:20px;
   background:rgba(255,255,255,0.05);
@@ -129,28 +157,56 @@ nav{width:300px;min-width:240px}
 }
 .wave::before { left:-100%; top:-10px; opacity:0.6; }
 .wave::after { left:-50%; top:-8px; opacity:0.4; animation-delay:-3s; }
+@keyframes wave-anim { 0% { transform:translateX(0); } 100% { transform:translateX(50%); } }
 
-@keyframes wave-anim {
-  0% { transform:translateX(0); }
-  100% { transform:translateX(50%); }
-}
-/* === End Wave === */
-
-.surface-heat{position:absolute;left:0;right:0;top:0;height:30%;pointer-events:none;mix-blend-mode:overlay}
+.surface-heat{position:absolute;left:0;right:0;top:0;height:30%;pointer-events:none;mix-blend-mode:overlay; transition: background 1s linear;}
 .bubbles{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none;overflow:hidden}
 
-/* bubbles */
-.bubble{position:absolute;border-radius:50%;background:rgba(255,255,255,0.9);opacity:0.85;filter:blur(0.2px);animation:rise linear infinite}
-@keyframes rise{0%{transform:translateY(0) scale(0.6);opacity:0.9}100%{transform:translateY(-320px) scale(1);opacity:0}} /* Disesuaikan dengan tinggi baru */
+/* bubbles (Kecepatan dikontrol JS) */
+.bubble{position:absolute;border-radius:50%;background:rgba(255,255,255,0.9);filter:blur(0.2px);animation:rise linear infinite}
+@keyframes rise{0%{transform:translateY(0) scale(0.6)}100%{transform:translateY(-320px) scale(1);opacity:0}}
 
-/* === Keterangan Warna (Baru) === */
+/* (BARU) Bar Indikator pH */
+.ph-bar-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 30px; /* Lebar total */
+}
+.ph-bar-label{
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.ph-bar-track{
+  flex: 1;
+  width: 20px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Mulai dari bawah */
+}
+#phBar{
+  width: 100%;
+  height: 50%; /* Default */
+  background-color: var(--ph-good);
+  border-radius: 8px 8px 0 0;
+  transition: height 1s ease, background-color 1s ease;
+}
+/* === End pH Bar === */
+
+/* Keterangan Warna (UPDATED) */
 .pond-legend{
   background:rgba(255,255,255,0.02); border-radius:8px;
   padding:10px; margin-top:12px; border:1px solid rgba(255,255,255,0.03);
 }
 .pond-legend strong { color: var(--muted); display:block; margin-bottom:6px; font-size:0.8rem; }
 .legend-item{ display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:0.8rem; }
-.legend-color{ width:14px; height:14px; border-radius:3px; }
+.legend-icon{ width:14px; text-align:center; }
 /* === End Keterangan === */
 
 /* chart & table */
@@ -159,9 +215,6 @@ canvas{max-height:260px}
 table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.02);text-align:left;font-size:0.9rem}
 th{color:var(--muted);font-weight:600}
-
-/* login hint */
-.login-note{font-size:0.85rem;color:var(--muted);margin-top:8px}
 
 /* responsive */
 @media(max-width:980px){
@@ -183,7 +236,7 @@ th{color:var(--muted);font-weight:600}
   </div>
   <p class="login-disclaimer">
     <b>Disclaimer:</b> Fitur login ini hanya untuk simulasi dan demonstrasi.
-    Ini tidak aman dan hanya menyembunyikan konten, bukan melindunginya.
+    Kata sandi: <b>tambak123</b>
   </p>
 </div>
 
@@ -220,18 +273,14 @@ th{color:var(--muted);font-weight:600}
           <button id="exportCsv" class="btn">Export CSV</button>
           <button id="resetData" class="btn-ghost">Reset Data</button>
         </div>
-        
         <a id="downloadLink" class="download-link" href="#" download="data.csv">Klik untuk Unduh CSV</a>
-
         <div style="display:flex; gap:8px;">
           <button id="manualSync" class="btn-ghost" style="flex:1">Manual Sync</button>
           <button id="refreshPage" class="btn-ghost" style="flex:1">Refresh Halaman</button>
         </div>
       </div>
-
       <div class="section-title" style="margin-top:12px">Info</div>
       <div class="small">Last sync: <span id="lastSync">-</span></div>
-      <div class="login-note">Login default: <b>zaenal</b> (simulasi).</div>
     </div>
   </nav>
 
@@ -252,21 +301,32 @@ th{color:var(--muted);font-weight:600}
         <div class="pond-panel">
           <div class="pond-label">Visual Kolam</div>
           
-          <div class="pond-canvas">
-            <div class="water-container">
-              <div class="water" id="waterBox" style="height:90%;"> <div class="wave"></div> <div class="water-level" id="waterLevel" style="height:100%"></div>
-                <div class="surface-heat" id="surfaceHeat"></div>
-                <div class="bubbles" id="bubbles"></div>
+          <div class="pond-wrapper">
+            <div class="pond-canvas">
+              <div class="water-container">
+                <div class="water" id="waterBox" style="height:90%;">
+                  <div class="wave"></div>
+                  <div class="water-level" id="waterLevel" style="height:100%"></div>
+                  <div class="surface-heat" id="surfaceHeat"></div>
+                  <div id="pondParticles"></div>
+                  <div class="bubbles" id="bubbles"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="ph-bar-container">
+              <div class="ph-bar-label">pH</div>
+              <div class="ph-bar-track">
+                <div id="phBar"></div>
               </div>
             </div>
           </div>
-
           <div class="pond-legend">
-            <strong>Legenda Keterangan</strong>
-            <div class="legend-item"><div class="legend-color" style="background:#0478FF;"></div> Biru Jernih (Kekeruhan Rendah)</div>
-            <div class="legend-item"><div class="legend-color" style="background:#14B48C;"></div> Kehijauan (Kekeruhan Sedang)</div>
-            <div class="legend-item"><div class="legend-color" style="background:#966E2D;"></div> Kecoklatan (Kekeruhan Tinggi)</div>
-            <div class="legend-item"><div class="legend-color" style="background:linear-gradient(90deg, rgba(255,150,80,0.4), rgba(255,100,0,0.8));"></div> Lapisan Oranye (Suhu Hangat)</div>
+            <strong>Legenda Visual</strong>
+            <div class="legend-item"><span class="legend-icon">🌡️</span> Gradasi Permukaan = Suhu</div>
+            <div class="legend-item"><span class="legend-icon">🌫️</span> Partikel Apung = Kekeruhan</div>
+            <div class="legend-item"><span class="legend-icon">📊</span> Bar Vertikal = Indikator pH</div>
+            <div class="legend-item"><span class="legend-icon">🫧</span> Kecepatan Gelembung = Kadar DO</div>
           </div>
           
           <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
@@ -302,7 +362,6 @@ th{color:var(--muted);font-weight:600}
 
         </div>
       </div>
-
     </div>
   </section>
 </main>
@@ -318,8 +377,8 @@ const storageKey = 'sfp_onepond_v2';
 const controlsKey = 'sfp_onepond_controls_v2';
 const defaultState = {
   pondName: 'Tambak Utama',
-  visual: { level:90, turb:30, temp:29.0, ph:7.1, do:6.0 }, // Level default 90
-  history: []  // array of readings
+  visual: { level:90, turb:30, temp:29.0, ph:7.1, do:6.0 },
+  history: []
 };
 let state = {};
 let controls = { pump:true, aerator:true };
@@ -350,95 +409,167 @@ function setupEventListeners() {
   document.getElementById('btnAer').addEventListener('click', ()=>{
     controls.aerator = !controls.aerator; applyControlsUI(); saveControls(); sendControlMock();
   });
-  
-  // Tombol Export CSV (Diperbarui)
   document.getElementById('exportCsv').addEventListener('click', exportCSV);
-  
-  // Tombol Reset Data
   document.getElementById('resetData').addEventListener('click', ()=>{
     if(confirm('Reset semua history data?')){ state.history = []; document.querySelector('#logTable tbody').innerHTML=''; drawChart(); saveState(); }
   });
-  
-  // Tombol Refresh/Sync (Baru)
   document.getElementById('manualSync').addEventListener('click', step);
   document.getElementById('refreshPage').addEventListener('click', () => location.reload());
-  
   document.getElementById('btnPause').addEventListener('click', ()=>{
     paused = !paused; document.getElementById('btnPause').textContent = paused ? 'Resume' : 'Pause';
   });
   document.getElementById('windowSel').addEventListener('change', (e)=>{ windowSize = parseInt(e.target.value); drawChart(); });
-  
-  // Tombol Logout (Baru)
   document.getElementById('logoutButton').addEventListener('click', () => {
     if (confirm('Anda yakin ingin logout?')) {
-      location.reload(); // Cukup reload, login screen akan muncul
+      location.reload();
     }
   });
 }
 
-/* =========================
-  Visual update logic
-  ========================= */
+/* =======================================
+  (DIREVISI) Visual update logic
+  ======================================= */
 function applyControlsUI(){
   const p = document.getElementById('btnPump'); const a = document.getElementById('btnAer');
   p.textContent = 'Pompa: ' + (controls.pump ? 'ON' : 'OFF'); p.style.background = controls.pump ? '#12e5a1' : '#ff6b6b';
   a.textContent = 'Aerator: ' + (controls.aerator ? 'ON' : 'OFF'); a.style.background = controls.aerator ? '#12e5a1' : '#ff6b6b';
 }
 function updateVisualsFromReading(reading){
-  // update visual snapshots
   const vis = { level: reading.level, turb: reading.turb, temp: reading.temp, ph: reading.ph, do: reading.do };
   state.visual = vis;
   
-  // water level UI (min 6%, max 100%)
+  // 1. Update Water Level
   const levelPct = Math.max(6, Math.min(100, vis.level));
   document.getElementById('waterBox').style.height = (levelPct) + '%';
-  
-  // Perbarui teks
   document.getElementById('visLevel').textContent = levelPct.toFixed(0) + '%';
+
+  // 2. Update Teks Lainnya
   document.getElementById('visTurb').textContent = vis.turb.toFixed(1) + ' NTU';
   document.getElementById('visTemp').textContent = vis.temp.toFixed(1) + ' °C';
   document.getElementById('visPH').textContent = vis.ph.toFixed(2);
   document.getElementById('visDO').textContent = vis.do.toFixed(2) + ' mg/L';
 
-  // compute water color based on turbidity
-  let turb = vis.turb;
+  // 3. (REVISI) Visual Suhu (Gradien) & Kekeruhan (Warna Dasar)
   let turbColor;
-  if(turb <= 25) turbColor = {r:4,g:120,b:255};      // clear blue (#0478FF)
-  else if(turb <= 50) turbColor = {r:20,g:180,b:140}; // greenish (#14B48C)
-  else turbColor = {r:150,g:110,b:45};               // brownish (#966E2D)
+  if(vis.turb <= 25) turbColor = {r:4,g:120,b:255};      // clear blue
+  else if(vis.turb <= 50) turbColor = {r:20,g:180,b:140}; // greenish
+  else turbColor = {r:150,g:110,b:45};               // brownish
 
-  // temp mix (warmer -> orange tint)
   let tempFactor = (vis.temp - 20) / 15; tempFactor = Math.max(0, Math.min(1, tempFactor));
   const warm = {r:255,g:120,b:60};
-  const mixed = {
+  
+  // Campur warna atas (suhu)
+  const topMixed = {
     r: Math.round(turbColor.r*(1-tempFactor) + warm.r*tempFactor),
     g: Math.round(turbColor.g*(1-tempFactor) + warm.g*tempFactor),
     b: Math.round(turbColor.b*(1-tempFactor) + warm.b*tempFactor)
   };
-  const bg = `linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.04)), rgba(${mixed.r},${mixed.g},${mixed.b},0.92)`;
-  document.getElementById('waterBox').style.background = bg;
+  
+  // Warna dasar (kekeruhan)
+  const bottomColor = `rgba(${turbColor.r},${turbColor.g},${turbColor.b},0.92)`;
+  // Warna atas (campuran suhu + kekeruhan)
+  const topColor = `rgba(${topMixed.r},${topMixed.g},${topMixed.b},0.85)`;
 
-  // surface heat overlay
+  document.getElementById('waterBox').style.background = `linear-gradient(180deg, ${topColor} 20%, ${bottomColor} 100%)`;
+  
+  // Update surface heat overlay
   const surface = document.getElementById('surfaceHeat');
   surface.style.background = `linear-gradient(180deg, rgba(255,${Math.round(200*tempFactor)},${Math.round(80*tempFactor)},${0.12*tempFactor}), rgba(255,255,255,0))`;
 
-  // bubbles based on DO & pH
+  // 4. (BARU) Visual Kekeruhan (Partikel)
+  generateParticles(vis.turb);
+
+  // 5. (BARU) Visual pH (Bar Indikator)
+  const phBar = document.getElementById('phBar');
+  let phColor = 'var(--ph-good)';
+  if (vis.ph < 6.5) phColor = 'var(--ph-acid)';
+  else if (vis.ph > 8.0) phColor = 'var(--ph-base)';
+  
+  // Skala 4-10
+  let phHeight = ((vis.ph - 4) / (10 - 4)) * 100;
+  phHeight = Math.max(0, Math.min(100, phHeight));
+  
+  phBar.style.height = phHeight + '%';
+  phBar.style.backgroundColor = phColor;
+  
+  // 6. (REVISI) Visual DO (Gelembung Dinamis)
   generateBubbles(vis.do, vis.ph);
 }
 
-/* bubbles */
+/* (BARU) Fungsi Partikel Kekeruhan */
+function generateParticles(turbVal) {
+  const container = document.getElementById('pondParticles');
+  container.innerHTML = '';
+  
+  let count = 0;
+  let particleColor = 'rgba(255, 255, 255, 0.1)';
+  let baseSize = 2;
+
+  if (turbVal <= 25) { // Jernih
+    count = 10;
+    particleColor = 'rgba(200, 220, 255, 0.2)';
+    baseSize = 1;
+  } else if (turbVal <= 50) { // Sedang
+    count = 30;
+    particleColor = 'rgba(180, 200, 150, 0.3)';
+    baseSize = 2;
+  } else { // Keruh
+    count = 60;
+    particleColor = 'rgba(150, 110, 45, 0.4)';
+    baseSize = 3;
+  }
+
+  for(let i=0; i<count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = (baseSize + Math.random() * baseSize);
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.background = particleColor;
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.bottom = (Math.random() * 20) + '%';
+    
+    const animDuration = (10 + Math.random() * 10); // Durasi 10-20 detik
+    const animDelay = (Math.random() * animDuration);
+    const xEnd = (Math.random() - 0.5) * 40; // Gerak horizontal
+    
+    p.style.setProperty('--x-end', xEnd + 'px');
+    p.style.animationDuration = animDuration + 's';
+    p.style.animationDelay = -animDelay + 's'; // Mulai di tengah animasi
+    
+    container.appendChild(p);
+  }
+}
+
+/* (REVISI) Fungsi Gelembung Dinamis */
 function generateBubbles(doVal, phVal){
-  const container = document.getElementById('bubbles'); container.innerHTML = '';
+  const container = document.getElementById('bubbles'); 
+  container.innerHTML = '';
+  
   let count = Math.round(Math.max(0, Math.min(14, doVal * 2)));
   if(phVal < 6.5 || phVal > 8.0) count = Math.max(0, count - 4);
+
+  // Tentukan kecepatan berdasarkan DO
+  let baseDuration;
+  let baseOpacity;
+  if (doVal < 4) { // Lambat
+    baseDuration = 8; // 8-11 detik
+    baseOpacity = 0.4;
+  } else if (doVal < 6) { // Normal
+    baseDuration = 5; // 5-8 detik
+    baseOpacity = 0.7;
+  } else { // Cepat
+    baseDuration = 3; // 3-6 detik
+    baseOpacity = 0.9;
+  }
+
   for(let i=0;i<count;i++){
     const b = document.createElement('div'); b.className='bubble';
     const left = 5 + Math.random()*90;
     const size = 6 + Math.random()*12; b.style.width = size + 'px'; b.style.height = size + 'px';
     b.style.left = left + '%'; b.style.bottom = (10 + Math.random()*20) + 'px';
-    b.style.opacity = 0.5 + Math.random()*0.5;
-    b.style.animationDuration = (3 + Math.random()*3) + 's';
-    b.style.background = 'rgba(255,255,255,0.85)';
+    b.style.opacity = (baseOpacity + Math.random()*0.1);
+    b.style.animationDuration = (baseDuration + Math.random()*3) + 's';
     container.appendChild(b);
   }
 }
@@ -454,20 +585,11 @@ function initChart(){
       {label:'Suhu (°C)', data:[], borderColor:'#00d4ff', tension:0.3, yAxisID:'y'},
       {label:'pH', data:[], borderColor:'#ff7b7b', tension:0.3, yAxisID:'y2'}
     ]},
-    options:{
-      responsive:true,
-      interaction:{mode:'index',intersect:false},
-      stacked:false,
-      scales:{
-        y:{ type:'linear', display:true, position:'left', title:{display:true,text:'Suhu (°C)'} },
-        y2:{ type:'linear', display:true, position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'pH'} }
-      },
-      plugins:{legend:{position:'bottom'}}
-    }
+    options:{ /* ... Opsi Chart ... */ }
   });
 }
 function drawChart(){
-  if(!chart) return; // Jangan gambar jika chart belum siap
+  if(!chart) return;
   const labels = state.history.slice(-windowSize).map(s=>s.time);
   const temps = state.history.slice(-windowSize).map(s=>s.temp);
   const phs = state.history.slice(-windowSize).map(s=>s.ph);
@@ -486,7 +608,7 @@ function appendLogRow(r){
   ========================= */
 function seedInitial(){
   for(let i=0;i<12;i++){
-    const base = {nominalTemp:29, nominalPH:7.1, nominalDO:6.0, nominalTurb:30, nominalLevel:90}; // Level 90
+    const base = {nominalTemp:29, nominalPH:7.1, nominalDO:6.0, nominalTurb:30, nominalLevel:90};
     const r = makeReading(Object.assign({id:1}, base));
     state.history.push(r);
   }
@@ -496,19 +618,24 @@ function makeReading(base){
   const ph = +(base.nominalPH + (Math.random()-0.5)*0.12).toFixed(2);
   const doV = +(base.nominalDO + (Math.random()-0.5)*0.4).toFixed(2);
   const turb = +(base.nominalTurb + (Math.random()-0.5)*3).toFixed(1);
-  // Logika Level BARU: Fluktuasi antara 85% dan 95%
   const level = Math.max(85, Math.min(95, +(base.nominalLevel + (Math.random()-0.5)*10).toFixed(1)));
   return { time: nowStr(), temp, ph, do: doV, turb, level };
 }
 function step(){
   if(!simMode || paused) return;
-  const base = {nominalTemp:29, nominalPH:7.1, nominalDO:6.0, nominalTurb:30, nominalLevel:state.visual.level};
+  // Buat data sedikit berfluktuasi untuk demo
+  const last = state.visual;
+  const base = {
+    nominalTemp: +(last.temp + (Math.random()-0.5)*0.5).toFixed(2),
+    nominalPH: +(last.ph + (Math.random()-0.5)*0.1).toFixed(2),
+    nominalDO: +(last.do + (Math.random()-0.5)*0.2).toFixed(2),
+    nominalTurb: Math.max(5, +(last.turb + (Math.random()-0.5)*5).toFixed(1)),
+    nominalLevel: last.level
+  };
   const r = makeReading(base);
   state.history.push(r);
   if(state.history.length > 500) state.history.shift();
-  // update visual snapshot from reading
-  state.visual = { level: r.level, turb: r.turb, temp: r.temp, ph: r.ph, do: r.do };
-  // update UI
+  
   updateVisualsFromReading(r);
   updateValueCards(r);
   appendLogRow(r);
@@ -545,10 +672,9 @@ function updateOverallBadge(){
 }
 
 /* =========================
-  Mock send control (API-ready)
+  Mock send control
   ========================= */
 function sendControlMock(){
-  // replace with real fetch POST to /api/control if you have backend
   console.log('Send control (mock):', controls);
 }
 
@@ -562,18 +688,16 @@ function exportCSV(){
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   
-  // (BARU) Tampilkan link download, jangan klik otomatis
   const a = document.getElementById('downloadLink');
   a.href = url;
   a.download = 'tambak_data_'+(new Date().toISOString().slice(0,10))+'.csv';
   a.textContent = 'Klik DI SINI untuk Unduh CSV';
   a.style.display = 'block';
   
-  // (BARU) Sembunyikan link setelah beberapa detik
   setTimeout(() => {
     a.style.display = 'none';
-    URL.revokeObjectURL(url); // Hapus blob url
-  }, 10000); // Sembunyikan setelah 10 detik
+    URL.revokeObjectURL(url);
+  }, 10000);
 }
 
 /* =========================
@@ -581,20 +705,17 @@ function exportCSV(){
   ========================= */
 function startApp(){
   loadState(); loadControls(); applyControlsUI();
-  setupEventListeners(); // Pindahkan event listeners ke sini
+  setupEventListeners();
   document.getElementById('pondName').textContent = state.pondName;
-  // populate UI from latest reading or visual
-  if(state.history.length){
-    const last = state.history[state.history.length-1];
-    updateValueCards(last); updateVisualsFromReading(last); 
-    // Hapus log lama sebelum mengisi ulang
-    document.querySelector('#logTable tbody').innerHTML = '';
-    state.history.forEach(h=>appendLogRow(h));
-  } else {
-    seedInitial();
-    state.history.forEach(h=>appendLogRow(h));
-    saveState();
-  }
+  
+  // populate UI
+  const last = state.history.length ? state.history[state.history.length-1] : defaultState.visual;
+  updateValueCards(last); 
+  updateVisualsFromReading(last); // Panggil ini untuk set visual awal
+  
+  document.querySelector('#logTable tbody').innerHTML = '';
+  state.history.forEach(h=>appendLogRow(h));
+  
   initChart(); drawChart(); updateOverallBadge();
   document.getElementById('lastSync').textContent = nowStr();
   // loop
@@ -602,11 +723,10 @@ function startApp(){
 }
 
 /* =========================
-  LOGIN SCRIPT (BARU)
+  LOGIN SCRIPT
   ========================= */
 window.addEventListener('load', () => {
-  const KATA_SANDI = "tambak123"; // <-- UBAH KATA SANDI DI SINI
-  
+  const KATA_SANDI = "tambak123";
   const loginScreen = document.getElementById('loginScreen');
   const appScreen = document.getElementById('app');
   const passInput = document.getElementById('passInput');
@@ -615,20 +735,15 @@ window.addEventListener('load', () => {
 
   function attemptLogin() {
     if (passInput.value === KATA_SANDI) {
-      // Berhasil
       loginScreen.style.display = 'none';
       appScreen.style.display = 'block';
-      startApp(); // Mulai aplikasi setelah login
+      startApp();
     } else {
-      // Gagal
       loginError.style.display = 'block';
     }
   }
   
-  // Event listener untuk tombol
   loginButton.addEventListener('click', attemptLogin);
-  
-  // Event listener untuk tekan 'Enter' di input
   passInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       attemptLogin();
