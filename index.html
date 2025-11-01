@@ -1,245 +1,578 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Fish Pond Dashboard PRO</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    /* === STYLE DASAR === */
-    * { box-sizing: border-box; }
-    body {
-      font-family: "Poppins", sans-serif;
-      background: #f4f7fa;
-      margin: 0;
-      color: #333;
-    }
-    header {
-      background: linear-gradient(135deg, #0077b6, #00b4d8);
-      color: white;
-      text-align: center;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    header h1 { margin: 0; font-size: 1.8em; }
-    header p { margin: 5px 0 0; font-weight: 300; }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Smart Fish Pond Dashboard PRO+ (Dark)</title>
 
-    main {
-      padding: 20px;
-      max-width: 1100px;
-      margin: auto;
-    }
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    /* === KARTU STATUS === */
-    .status-section {
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      margin-bottom: 25px;
-    }
-    .card {
-      background: white;
-      width: 170px;
-      margin: 10px;
-      border-radius: 10px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      padding: 15px;
-      text-align: center;
-      transition: transform 0.3s;
-    }
-    .card:hover { transform: scale(1.05); }
-    .card h2 { color: #0077b6; font-size: 1em; margin: 5px 0; }
-    .card p { font-size: 1.6em; margin: 5px 0; font-weight: bold; }
+<style>
+  :root{
+    --bg:#0f1724;
+    --panel:#0b1320;
+    --muted:#9aa4b2;
+    --accent:#00d4ff;
+    --accent2:#ff7b7b;
+    --card:#0f1a2b;
+    --glass: rgba(255,255,255,0.03);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background: linear-gradient(180deg,var(--bg),#08101a);
+    color:#e6eef6;
+    font-family: Inter,Ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
 
-    /* === GRAFIK === */
-    .chart-container {
-      background: white;
-      border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      margin-bottom: 25px;
-    }
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:14px 20px;
+    background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border-bottom:1px solid rgba(255,255,255,0.04);
+    position:sticky; top:0; z-index:40;
+  }
+  .brand {
+    display:flex; align-items:center; gap:12px;
+  }
+  .logo{
+    width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#4a8cff);display:flex;align-items:center;justify-content:center;font-weight:700;
+  }
+  .brand h1{margin:0;font-size:1.05rem}
+  .brand p{margin:0;font-size:0.78rem;color:var(--muted)}
 
-    /* === KONTROL PERANGKAT === */
-    .control-section {
-      background: white;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      margin-bottom: 25px;
-    }
-    .control-section h3 {
-      color: #0077b6;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-around;
-    }
-    .control-btn {
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      font-size: 1em;
-      color: white;
-      background: #00b4d8;
-      margin: 5px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .control-btn.off { background: #ef233c; }
-    .control-btn:hover { opacity: 0.8; }
+  /* Layout */
+  main{display:flex; gap:18px; padding:18px; max-width:1200px; margin:18px auto;}
+  nav{width:260px; min-width:220px;}
+  .content{flex:1; min-width:300px;}
 
-    /* === STATUS ALERT === */
-    .alert {
-      text-align: center;
-      font-weight: bold;
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 15px;
-    }
-    .alert.safe { background: #c8e6c9; color: #2e7d32; }
-    .alert.warning { background: #fff3cd; color: #856404; }
-    .alert.danger { background: #f8d7da; color: #721c24; }
+  /* Sidebar */
+  .panel{background:linear-gradient(180deg,var(--panel),var(--card)); border-radius:12px; padding:14px;border:1px solid rgba(255,255,255,0.02);}
+  .section-title{font-size:0.85rem;color:var(--muted);margin-bottom:8px}
+  .user-box{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .user-avatar{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#00c6ff,#0077ff);display:flex;align-items:center;justify-content:center;font-weight:700}
+  .small{font-size:0.82rem;color:var(--muted)}
 
-    /* === FOOTER === */
-    footer {
-      background: #0077b6;
-      color: white;
-      text-align: center;
-      padding: 10px;
-      font-size: 0.9em;
-    }
+  select, button, input{
+    background:transparent;border:1px solid rgba(255,255,255,0.06); color:inherit; padding:8px 10px;border-radius:8px;
+  }
+  .btn{
+    background:linear-gradient(90deg,var(--accent),#48b3ff); border:none; color:#021022; font-weight:600; padding:9px 12px; border-radius:8px; cursor:pointer;
+  }
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04); color:var(--muted); cursor:pointer}
 
-    @media(max-width:600px){
-      .card { width: 45%; }
-    }
-  </style>
+  /* Cards */
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;}
+  .card{background:var(--glass); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.03);}
+  .card h3{margin:0;font-size:0.95rem}
+  .bigval{font-size:1.6rem;font-weight:700; margin-top:6px}
+
+  /* Status badges */
+  .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:600;font-size:0.86rem}
+  .good{background:rgba(28,200,120,0.12); color:#7ee3a3; border:1px solid rgba(28,200,120,0.14)}
+  .warn{background:rgba(255,185,0,0.08); color:#ffd58a; border:1px solid rgba(255,185,0,0.12)}
+  .danger{background:rgba(255,80,80,0.08); color:#ff9aa2; border:1px solid rgba(255,80,80,0.12)}
+
+  /* Controls */
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .ctl-btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer;color:#021022;font-weight:700}
+  .on{background: #12e5a1}
+  .off{background:#ff6b6b}
+
+  /* Chart area */
+  .chart-area{margin-top:12px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)); padding:12px; border-radius:10px;}
+  canvas{max-height:340px}
+
+  /* table */
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.02); text-align:left; font-size:0.9rem}
+  th{color:var(--muted); font-weight:600}
+
+  /* Login modal */
+  #loginModal{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.6)); z-index:80}
+  .login-card{width:360px;padding:18px;border-radius:12px;background:linear-gradient(180deg, #081018, #071019); border:1px solid rgba(255,255,255,0.04); box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+  .field{margin:10px 0}
+  .warn-txt{color:#ff9aa2;font-weight:700}
+
+  /* responsive */
+  @media(max-width:900px){
+    main{padding:12px;flex-direction:column}
+    nav{width:100%}
+  }
+
+</style>
 </head>
 <body>
   <header>
-    <h1>🐟 Smart Fish Pond Dashboard PRO</h1>
-    <p>Real-Time Monitoring & Control System</p>
+    <div class="brand">
+      <div class="logo">IoT</div>
+      <div>
+        <h1>Smart Fish Pond — PRO+</h1>
+        <p class="small">Monitoring · Automation · Analytics</p>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="small">User: <span id="hdrUser">—</span></div>
+      <button id="logoutBtn" class="btn-ghost" style="display:none" onclick="doLogout()">Logout</button>
+    </div>
   </header>
 
   <main>
-    <!-- ALERT STATUS -->
-    <div id="statusAlert" class="alert safe">Kondisi Tambak: Normal</div>
+    <!-- SIDEBAR -->
+    <nav>
+      <div class="panel">
+        <div class="user-box">
+          <div class="user-avatar" id="avatarTxt">Z</div>
+          <div>
+            <div id="sideUser">Guest</div>
+            <div class="small" id="sideRole">Operator</div>
+          </div>
+        </div>
 
-    <!-- DATA SENSOR -->
-    <section class="status-section">
-      <div class="card"><h2>Suhu</h2><p id="temp">-- °C</p></div>
-      <div class="card"><h2>pH Air</h2><p id="ph">--</p></div>
-      <div class="card"><h2>Oksigen (DO)</h2><p id="do">-- mg/L</p></div>
-      <div class="card"><h2>Kekeruhan</h2><p id="turbidity">-- NTU</p></div>
-      <div class="card"><h2>Level Air</h2><p id="level">-- cm</p></div>
-    </section>
+        <div class="section-title">Pilih Tambak</div>
+        <select id="pondSelect" style="width:100%; margin-bottom:12px"></select>
 
-    <!-- GRAFIK -->
-    <section class="chart-container">
-      <canvas id="chartSensor"></canvas>
-    </section>
+        <div class="section-title">Kontrol Cepat</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="btnPump" class="ctl-btn on">Pompa: ON</button>
+          <button id="btnAer" class="ctl-btn off">Aerator: OFF</button>
+        </div>
 
-    <!-- KONTROL OTOMATIS -->
-    <section class="control-section">
-      <h3>Kontrol Perangkat</h3>
-      <div class="controls">
-        <button class="control-btn" id="pump">Pompa Air</button>
-        <button class="control-btn" id="aerator">Aerator</button>
-        <button class="control-btn" id="valve">Katup Air</button>
+        <div style="margin-top:12px" class="section-title">Export & Tools</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button class="btn" id="exportCsv">Export CSV</button>
+          <button class="btn-ghost" id="toggleSim">SIM: ON</button>
+        </div>
+
+        <div style="margin-top:16px" class="section-title">Info Sistem</div>
+        <div class="small">Mode: <span id="modeLabel">Simulation</span></div>
+        <div class="small">Last sync: <span id="lastSync">-</span></div>
+      </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <section class="content">
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <div class="section-title">Status Tambak</div>
+            <h2 id="pondName">--</h2>
+          </div>
+          <div style="text-align:right">
+            <div class="small">Overall</div>
+            <div id="overallBadge" class="badge good">NORMAL</div>
+          </div>
+        </div>
+
+        <div class="grid" style="margin-top:12px">
+          <div class="card">
+            <h3>🌡️ Suhu</h3>
+            <div class="bigval" id="valTemp">-- °C</div>
+            <div class="small">Threshold: 24°C - 32°C</div>
+          </div>
+
+          <div class="card">
+            <h3>⚗️ pH</h3>
+            <div class="bigval" id="valPH">--</div>
+            <div class="small">Threshold: 6.5 - 8.0</div>
+          </div>
+
+          <div class="card">
+            <h3>🫧 DO</h3>
+            <div class="bigval" id="valDO">-- mg/L</div>
+            <div class="small">Threshold: &gt;= 5 mg/L</div>
+          </div>
+
+          <div class="card">
+            <h3>🌫️ Kekeruhan</h3>
+            <div class="bigval" id="valTurb">-- NTU</div>
+            <div class="small">Lower is better</div>
+          </div>
+
+        </div>
+
+        <!-- charts -->
+        <div class="chart-area" style="margin-top:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="section-title">Grafik Riwayat (Suhu & pH)</div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button class="btn-ghost" id="btnReset">Reset Data</button>
+              <div class="small">Window: <select id="windowSel">
+                <option value="10">10 pts</option>
+                <option value="20" selected>20 pts</option>
+                <option value="50">50 pts</option>
+              </select></div>
+            </div>
+          </div>
+          <canvas id="chartMain"></canvas>
+
+          <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+            <div class="small">Recent readings</div>
+            <div style="flex:1"></div>
+            <div class="small">Auto-update every <span id="autoFreq">2s</span></div>
+          </div>
+
+          <table id="logTable" style="margin-top:8px">
+            <thead><tr><th>Waktu</th><th>Tambak</th><th>Suhu (°C)</th><th>pH</th><th>DO</th><th>Turbidity</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
       </div>
     </section>
   </main>
 
-  <footer>© 2025 Smart IoT System | Developed by Waskita</footer>
+  <!-- Login Modal -->
+  <div id="loginModal">
+    <div class="login-card">
+      <h2>Login Petambak</h2>
+      <div class="field">
+        <label class="small">Username</label>
+        <input id="inUser" placeholder="username" />
+      </div>
+      <div class="field">
+        <label class="small">Password</label>
+        <input id="inPass" type="password" placeholder="password" />
+      </div>
+      <div style="display:flex;gap:10px; margin-top:12px">
+        <button class="btn" onclick="doLogin()">Login</button>
+        <button class="btn-ghost" onclick="fillDemo()">Isi Demo</button>
+      </div>
+      <p style="margin-top:10px" class="warn-txt" id="loginWarn"></p>
+      <p class="small" style="margin-top:8px;color:var(--muted)">Username: <b>zaenal</b> &nbsp; Password: <b>zaenalganteng</b></p>
+    </div>
+  </div>
 
-  <script>
-    // ======= SIMULASI DATA SENSOR =======
-    const dataSensor = { temp: 0, ph: 0, do: 0, turbidity: 0, level: 0 };
-    const chartCtx = document.getElementById('chartSensor').getContext('2d');
-    const chart = new Chart(chartCtx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [
-          { label: 'Suhu (°C)', borderColor: '#0077b6', data: [], fill: false },
-          { label: 'pH', borderColor: '#ff6b6b', data: [], fill: false },
-          { label: 'DO (mg/L)', borderColor: '#00b894', data: [], fill: false }
-        ]
+<script>
+/* =========================
+   App State & Defaults
+   ========================= */
+const CREDENTIAL = {user:'zaenal', pass:'zaenalganteng'};
+const POND_IDS = [1,2,3];
+const DEFAULT_PONDS = {
+  1: {id:1,name:'Tambak Lele', species:'Lele', pump:true, aerator:false, history:[]},
+  2: {id:2,name:'Tambak Nila', species:'Nila', pump:false, aerator:true, history:[]},
+  3: {id:3,name:'Tambak Gurame', species:'Gurame', pump:true, aerator:true, history:[]}
+};
+
+let ponds = {};           // will load from localStorage or default
+let curPond = 1;
+let simMode = true;
+let updateInterval = 2000; // ms
+let chart = null;
+let maxWindow = 20;
+
+/* =========================
+   Helpers
+   ========================= */
+function saveState(){
+  localStorage.setItem('sfp_state', JSON.stringify(ponds));
+}
+function loadState(){
+  const v = localStorage.getItem('sfp_state');
+  if(v){ ponds = JSON.parse(v); } else { ponds = JSON.parse(JSON.stringify(DEFAULT_PONDS)); saveState(); }
+}
+function setUserUI(username){
+  document.getElementById('hdrUser').textContent = username;
+  document.getElementById('sideUser').textContent = username;
+  document.getElementById('avatarTxt').textContent = username.charAt(0).toUpperCase();
+  document.getElementById('logoutBtn').style.display = 'inline-block';
+}
+
+function nowStr(){ return new Date().toLocaleString(); }
+
+/* =========================
+   Login Handling
+   ========================= */
+function doLogin(){
+  const u = document.getElementById('inUser').value.trim();
+  const p = document.getElementById('inPass').value;
+  const w = document.getElementById('loginWarn');
+  if(u===CREDENTIAL.user && p===CREDENTIAL.pass){
+    w.textContent='';
+    localStorage.setItem('sfp_user', u);
+    document.getElementById('loginModal').style.display='none';
+    setUserUI(u);
+    initApp();
+  } else {
+    w.textContent = 'Username atau password salah!';
+  }
+}
+function fillDemo(){ document.getElementById('inUser').value = 'zaenal'; document.getElementById('inPass').value='zaenalganteng'; }
+function doLogout(){
+  localStorage.removeItem('sfp_user');
+  document.getElementById('loginModal').style.display='flex';
+  document.getElementById('logoutBtn').style.display='none';
+}
+
+/* =========================
+   UI Init
+   ========================= */
+function populatePondSelect(){
+  const sel = document.getElementById('pondSelect');
+  sel.innerHTML = '';
+  POND_IDS.forEach(id=>{
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = ponds[id].name + ' — ' + ponds[id].species;
+    sel.appendChild(opt);
+  });
+  sel.value = curPond;
+  sel.onchange = ()=>{ curPond = parseInt(sel.value); renderPond(); };
+}
+
+function renderPond(){
+  const p = ponds[curPond];
+  document.getElementById('pondName').textContent = p.name + ' ('+p.species+')';
+  // controls
+  const pumpBtn = document.getElementById('btnPump');
+  const aerBtn = document.getElementById('btnAer');
+  pumpBtn.textContent = 'Pompa: ' + (p.pump ? 'ON' : 'OFF');
+  pumpBtn.className = 'ctl-btn ' + (p.pump ? 'on' : 'off');
+  aerBtn.textContent = 'Aerator: ' + (p.aerator ? 'ON' : 'OFF');
+  aerBtn.className = 'ctl-btn ' + (p.aerator ? 'on' : 'off');
+
+  // latest values if available
+  const last = p.history.length ? p.history[p.history.length-1] : null;
+  if(last){
+    setValueDisplays(last);
+    appendLogRow(last);
+  } else {
+    setValueDisplays(null);
+  }
+  updateOverallBadge();
+  updateLastSync();
+  drawChart();
+}
+
+/* =========================
+   Value display & alerts
+   ========================= */
+function setValueDisplays(latest){
+  const d = latest || {temp:'--',ph:'--',do:'--',turb:'--',time:'-'};
+  document.getElementById('valTemp').textContent = d.temp === '--' ? '-- °C' : d.temp.toFixed(2)+' °C';
+  document.getElementById('valPH').textContent = d.ph === '--' ? '--' : d.ph.toFixed(2);
+  document.getElementById('valDO').textContent = d.do === '--' ? '-- mg/L' : d.do.toFixed(2)+' mg/L';
+  document.getElementById('valTurb').textContent = d.turb.toFixed ? d.turb.toFixed(1)+' NTU' : d.turb+' NTU';
+}
+
+/* decide status based on thresholds */
+function getStatusFor(p){
+  // examine last reading
+  const last = p.history.length ? p.history[p.history.length-1] : null;
+  if(!last) return {code:'unknown', badge:'good', text:'NO DATA'};
+  const t = last.temp, ph = last.ph, d = last.do;
+  if(t < 24 || t > 33 || ph < 6.2 || ph > 8.5 || d < 4) return {code:'danger', badge:'danger', text:'BAHAYA'};
+  if(t < 25 || t > 31 || ph < 6.5 || ph > 8.0 || d < 5) return {code:'warn', badge:'warn', text:'PERLU PERHATIAN'};
+  return {code:'ok', badge:'good', text:'NORMAL'};
+}
+function updateOverallBadge(){
+  const p = ponds[curPond];
+  const st = getStatusFor(p);
+  const el = document.getElementById('overallBadge');
+  el.className = 'badge ' + st.badge;
+  el.textContent = st.text;
+}
+
+/* =========================
+   Chart: init & draw
+   ========================= */
+function initChart(){
+  const ctx = document.getElementById('chartMain').getContext('2d');
+  chart = new Chart(ctx,{
+    type:'line',
+    data:{labels:[], datasets:[
+      {label:'Suhu (°C)', data:[], borderColor:'#00d4ff', tension:0.25, yAxisID:'y'},
+      {label:'pH', data:[], borderColor:'#ff7b7b', tension:0.25, yAxisID:'y2'}
+    ]},
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      stacked:false,
+      scales:{
+        y:{ type:'linear', display:true, position:'left', title:{display:true,text:'Suhu (°C)'} },
+        y2:{ type:'linear', display:true, position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'pH'} }
       },
-      options: {
-        responsive: true,
-        scales: {
-          x: { title: { display: true, text: 'Waktu' } },
-          y: { title: { display: true, text: 'Nilai' } }
-        },
-        plugins: { legend: { position: 'bottom' } }
-      }
+      plugins:{legend:{position:'bottom'}}
+    }
+  });
+}
+
+function drawChart(){
+  if(!chart) initChart();
+  const p = ponds[curPond];
+  const window = maxWindow;
+  const labels = p.history.slice(-window).map(s=>s.time);
+  const temps = p.history.slice(-window).map(s=>s.temp);
+  const phs = p.history.slice(-window).map(s=>s.ph);
+  chart.data.labels = labels;
+  chart.data.datasets[0].data = temps;
+  chart.data.datasets[1].data = phs;
+  chart.update();
+}
+
+/* =========================
+   Logging (table)
+   ========================= */
+function appendLogRow(entry){
+  const tbody = document.querySelector('#logTable tbody');
+  const row = document.createElement('tr');
+  row.innerHTML = `<td>${entry.time}</td><td>${ponds[entry.pond].name}</td><td>${entry.temp.toFixed(2)}</td>
+                   <td>${entry.ph.toFixed(2)}</td><td>${entry.do.toFixed(2)}</td><td>${entry.turb.toFixed(1)}</td>`;
+  tbody.insertBefore(row, tbody.firstChild);
+  // keep max rows
+  while(tbody.children.length > 200) tbody.removeChild(tbody.lastChild);
+}
+
+/* =========================
+   Simulate or fetch new data
+   ========================= */
+function makeReading(base){
+  // base: object containing nominal values
+  return {
+    time: nowStr(),
+    pond: base.id,
+    temp: +(base.nominalTemp + (Math.random()-0.5)*1.8),
+    ph: +(base.nominalPH + (Math.random()-0.5)*0.12),
+    do: +(base.nominalDO + (Math.random()-0.5)*0.4),
+    turb: +(base.nominalTurb + (Math.random()-0.5)*3)
+  };
+}
+
+function stepGenerate(){
+  // for each pond create a new reading and push to history
+  POND_IDS.forEach(id=>{
+    const p = ponds[id];
+    // baseline values depend on species (coarse)
+    const nominal = speciesBaseline(p.species);
+    const r = makeReading(Object.assign({id:id}, nominal));
+    p.history.push(r);
+    // cap history
+    if(p.history.length > 500) p.history.shift();
+    saveState();
+    // if current pond, render
+    if(id===curPond){
+      setValueDisplays(r);
+      appendLogRow(r);
+      drawChart();
+      updateOverallBadge();
+    }
+  });
+  document.getElementById('lastSync').textContent = nowStr();
+}
+
+/* baseline depending on species */
+function speciesBaseline(species){
+  if(species==='Lele') return {nominalTemp:29.0, nominalPH:7.1, nominalDO:6.0, nominalTurb:30};
+  if(species==='Nila') return {nominalTemp:28.0, nominalPH:6.8, nominalDO:5.8, nominalTurb:40};
+  if(species==='Gurame') return {nominalTemp:29.5, nominalPH:7.3, nominalDO:6.5, nominalTurb:25};
+  return {nominalTemp:28, nominalPH:7.0, nominalDO:6.0, nominalTurb:30};
+}
+
+/* =========================
+   Controls & Events
+   ========================= */
+document.getElementById('btnPump').addEventListener('click', ()=>{
+  const p = ponds[curPond];
+  p.pump = !p.pump;
+  saveState();
+  renderPond();
+});
+document.getElementById('btnAer').addEventListener('click', ()=>{
+  const p = ponds[curPond];
+  p.aerator = !p.aerator;
+  saveState();
+  renderPond();
+});
+document.getElementById('exportCsv').addEventListener('click', ()=>{
+  exportCSV();
+});
+document.getElementById('toggleSim').addEventListener('click', (e)=>{
+  simMode = !simMode;
+  e.target.textContent = 'SIM: ' + (simMode ? 'ON' : 'OFF');
+  document.getElementById('modeLabel').textContent = simMode ? 'Simulation' : 'API (offline)';
+});
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(confirm('Reset semua data history untuk semua tambak?')) {
+    POND_IDS.forEach(id=>{ ponds[id].history = []; });
+    saveState(); document.querySelector('#logTable tbody').innerHTML=''; drawChart(); renderPond();
+  }
+});
+document.getElementById('windowSel').addEventListener('change', (e)=>{
+  maxWindow = parseInt(e.target.value); drawChart();
+});
+document.getElementById('btnReset'); // noop for lint
+
+/* =========================
+   CSV Export
+   ========================= */
+function exportCSV(){
+  // gather all history rows
+  let rows = [['time','pond_id','pond_name','temp','ph','do','turbidity']];
+  POND_IDS.forEach(id=>{
+    ponds[id].history.forEach(h=>{
+      rows.push([h.time, id, ponds[id].name, h.temp.toFixed(2), h.ph.toFixed(2), h.do.toFixed(2), h.turb.toFixed(1)]);
     });
+  });
+  const csv = rows.map(r => r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'sfp_export_'+(new Date().toISOString().slice(0,10))+'.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
 
-    function generateData() {
-      dataSensor.temp = (25 + Math.random() * 5).toFixed(2);
-      dataSensor.ph = (6 + Math.random() * 2).toFixed(2);
-      dataSensor.do = (5 + Math.random() * 2).toFixed(2);
-      dataSensor.turbidity = (10 + Math.random() * 20).toFixed(1);
-      dataSensor.level = (80 + Math.random() * 10).toFixed(1);
-
-      document.getElementById('temp').textContent = dataSensor.temp + " °C";
-      document.getElementById('ph').textContent = dataSensor.ph;
-      document.getElementById('do').textContent = dataSensor.do + " mg/L";
-      document.getElementById('turbidity').textContent = dataSensor.turbidity + " NTU";
-      document.getElementById('level').textContent = dataSensor.level + " cm";
-
-      updateChart();
-      checkAlert();
-    }
-
-    function updateChart() {
-      const now = new Date().toLocaleTimeString();
-      chart.data.labels.push(now);
-      chart.data.datasets[0].data.push(dataSensor.temp);
-      chart.data.datasets[1].data.push(dataSensor.ph);
-      chart.data.datasets[2].data.push(dataSensor.do);
-
-      if(chart.data.labels.length > 10){
-        chart.data.labels.shift();
-        chart.data.datasets.forEach(d => d.data.shift());
-      }
-      chart.update();
-    }
-
-    function checkAlert() {
-      const alertBox = document.getElementById('statusAlert');
-      const t = parseFloat(dataSensor.temp);
-      const p = parseFloat(dataSensor.ph);
-      const d = parseFloat(dataSensor.do);
-
-      if (t < 25 || p < 6.5 || p > 8.0 || d < 5) {
-        alertBox.className = 'alert danger';
-        alertBox.textContent = "⚠️ Kondisi Bahaya! Periksa Kualitas Air!";
-      } else if (t > 28 || p > 7.8) {
-        alertBox.className = 'alert warning';
-        alertBox.textContent = "⚠️ Perlu Perhatian: Kualitas Air Tidak Stabil";
-      } else {
-        alertBox.className = 'alert safe';
-        alertBox.textContent = "✅ Kondisi Tambak: Normal";
+/* =========================
+   Startup / App init
+   ========================= */
+function initApp(){
+  loadState();
+  populatePondSelect();
+  // if no history, prefill few points so charts not empty
+  POND_IDS.forEach(id=>{
+    if(ponds[id].history.length < 3){
+      for(let i=0;i<8;i++){
+        const baseline = speciesBaseline(ponds[id].species);
+        const r = makeReading(Object.assign({id:id}, baseline));
+        ponds[id].history.push(r);
       }
     }
+  });
+  saveState();
+  // set user UI
+  const u = localStorage.getItem('sfp_user') || 'zaenal';
+  setUserUI(u);
 
-    setInterval(generateData, 2000);
+  // attach header logout
+  document.getElementById('logoutBtn').onclick = doLogout;
 
-    // ======= KONTROL PERANGKAT =======
-    const buttons = document.querySelectorAll('.control-btn');
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('off');
-        btn.textContent = btn.classList.contains('off')
-          ? btn.textContent + " OFF"
-          : btn.textContent.replace(" OFF", "");
-      });
-    });
-  </script>
+  // initial render
+  renderPond();
+
+  // auto update loop
+  setInterval(()=>{
+    if(simMode) stepGenerate();
+  }, updateInterval);
+}
+
+/* auto-login check */
+window.addEventListener('load', ()=>{
+  const u = localStorage.getItem('sfp_user');
+  if(u && u.length>0){
+    document.getElementById('loginModal').style.display = 'none';
+    setUserUI(u);
+    loadState();
+    initApp();
+  } else {
+    document.getElementById('loginModal').style.display = 'flex';
+  }
+});
+</script>
 </body>
 </html>
