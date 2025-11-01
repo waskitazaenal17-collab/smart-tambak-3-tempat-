@@ -16,8 +16,8 @@
   --ph-acid: #ffc107;
   --ph-good: #2ecc71;
   --ph-base: #9b59b6;
-  --indicator-on: #12e5a1; /* (BARU) Warna indikator nyala */
-  --indicator-off: #333; /* (BARU) Warna indikator mati */
+  --indicator-on: #12e5a1;
+  --indicator-off: #333;
 }
 *{box-sizing:border-box}
 body{
@@ -72,7 +72,7 @@ nav{width:300px;min-width:240px}
 .section-title{font-size:0.85rem;color:var(--muted);margin-bottom:8px}
 .small{font-size:0.82rem;color:var(--muted)}
 
-/* (BARU) Indikator Otomasi */
+/* Indikator Otomasi */
 .auto-status-grid { 
   display:flex; 
   gap:12px; 
@@ -93,7 +93,7 @@ nav{width:300px;min-width:240px}
   border:1px solid #000;
   transition: background-color 0.3s;
 }
-.indicator-light.active { /* Status Nyala */
+.indicator-light.active {
   background:var(--indicator-on);
   box-shadow: 0 0 10px var(--indicator-on);
 }
@@ -103,13 +103,11 @@ nav{width:300px;min-width:240px}
 .btn{background:linear-gradient(90deg,var(--accent),#48b3ff);border:none;color:#021022;padding:9px 12px;border-radius:8px;cursor:pointer;font-weight:700}
 .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px 10px;border-radius:8px;cursor:pointer}
 .ctl{padding:8px 12px;border-radius:8px;border:none;font-weight:700;cursor:pointer}
-/* (BARU) Style untuk tombol saat Otomasi ON */
 .ctl.disabled {
   background: #555 !important;
   color: #999;
   cursor: not-allowed;
 }
-
 .download-link{
   display:none; background:#12e5a1; color:#021022; padding:9px 12px; border-radius:8px;
   text-decoration:none; font-weight:700; font-size:0.9rem; text-align:center; margin-top:8px;
@@ -121,17 +119,13 @@ nav{width:300px;min-width:240px}
 .card h3{margin:0;font-size:0.95rem}
 .bigval{font-size:1.6rem;font-weight:700;margin-top:6px}
 
-/* === (REVISI) VISUAL KOLAM === */
+/* === VISUAL KOLAM === */
 .pond-wrapper{ display: flex; gap: 12px; }
-
-/* (REVISI) Wadah / Dinding Tangki */
 .pond-canvas{
   position:relative; flex:1; height:350px;
   border-radius:12px; overflow:hidden;
-  /* Dinding solid + bingkai */
   background: #1a293f; 
   border: 1px solid var(--muted); 
-  /* Bayangan dalam (inset) */
   box-shadow: inset 0 0 25px rgba(0,0,0,0.7); 
   display:flex; justify-content:center; align-items:flex-end;
 }
@@ -139,19 +133,15 @@ nav{width:300px;min-width:240px}
   position:absolute; left:0; right:0; bottom:0; top:0;
   display:flex; align-items:flex-end; justify-content:center;
 }
-
-/* (REVISI) Air di dalam Tangki */
 .water{
-  width: 100%; /* (REVISI) Air memenuhi 100% tangki */
+  width: 100%; 
   height:90%;
   position:relative; overflow:hidden;
   transition:height 1s ease;
   box-shadow:inset 0 8px 40px rgba(0,0,0,0.35);
-  /* (REVISI) Hapus border & radius, biarkan menempel di dinding */
   border: none; 
   border-radius: 0; 
 }
-
 .water-level{
   position:absolute; left:0; right:0; bottom:0;
   background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0));
@@ -256,7 +246,6 @@ th{color:var(--muted);font-weight:600}
 
   <div style="display:flex;align-items:center;gap:12px">
     <button id="toggleAuto" class="btn" style="background:var(--accent2); color:#fff;">Otomasi: OFF</button>
-    
     <div class="small">Mode: <span id="modeLabel">Simulation</span></div>
     <button id="logoutButton" class="btn-ghost" style="color:var(--accent2);">Logout</button>
   </div>
@@ -366,6 +355,15 @@ th{color:var(--muted);font-weight:600}
           </div>
 
           <div class="chart-area">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div class="section-title">Grafik Riwayat</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <div class="small">Window:
+                  <select id="windowSel"><option value="10">10</option><option value="20" selected>20</option><option value="40">40</option></select>
+                </div>
+                <button id="btnPause" class="btn-ghost">Pause</button>
+              </div>
+            </div>
             <canvas id="chartMain"></canvas>
             <table id="logTable"><thead><tr><th>Waktu</th><th>Suhu</th><th>pH</th><th>DO</th><th>Turbidity</th><th>Level</th></tr></thead><tbody></tbody></table>
           </div>
@@ -381,7 +379,7 @@ th{color:var(--muted);font-weight:600}
 const updateIntervalDefault = 3000;
 let simMode = true;
 let paused = false;
-let automationActive = false; // (BARU) Status Otomasi
+let automationActive = false; // Status Otomasi
 
 const storageKey = 'sfp_onepond_v2';
 const controlsKey = 'sfp_onepond_controls_v2';
@@ -391,7 +389,6 @@ const defaultState = {
   history: []
 };
 let state = {};
-// (REVISI) Kontrol default mati, akan diatur oleh otomasi
 let controls = { pump:false, aerator:false }; 
 let chart = null;
 let windowSize = 20;
@@ -409,7 +406,6 @@ function nowStr(){ return new Date().toLocaleString('id-ID', { hour:'2-digit', m
   UI Setup
   ========================= */
 function setupEventListeners() {
-  // (BARU) Tombol Master Otomasi
   document.getElementById('toggleAuto').addEventListener('click', (e)=>{
     automationActive = !automationActive;
     e.target.textContent = 'Otomasi: ' + (automationActive ? 'ON' : 'OFF');
@@ -417,23 +413,19 @@ function setupEventListeners() {
       e.target.style.background = 'var(--indicator-on)';
       e.target.style.color = '#021022';
       document.getElementById('controlModeLabel').textContent = 'Mode: Otomatis';
-      // Matikan tombol manual
       document.getElementById('btnPump').classList.add('disabled');
       document.getElementById('btnAer').classList.add('disabled');
     } else {
       e.target.style.background = 'var(--accent2)';
       e.target.style.color = '#fff';
       document.getElementById('controlModeLabel').textContent = 'Mode: Manual';
-      // Aktifkan tombol manual
       document.getElementById('btnPump').classList.remove('disabled');
       document.getElementById('btnAer').classList.remove('disabled');
-      // Matikan lampu indikator
       document.getElementById('autoIndicatorPump').classList.remove('active');
       document.getElementById('autoIndicatorAerator').classList.remove('active');
     }
   });
 
-  // (REVISI) Tombol Manual
   document.getElementById('btnPump').addEventListener('click', (e)=>{
     if(automationActive) { alert('Matikan mode Otomasi untuk kontrol manual!'); return; }
     controls.pump = !controls.pump; 
@@ -447,12 +439,11 @@ function setupEventListeners() {
     saveControls();
   });
   
-  // Tombol Utility
   document.getElementById('exportCsv').addEventListener('click', exportCSV);
   document.getElementById('resetData').addEventListener('click', ()=>{
     if(confirm('Reset semua history data?')){ state.history = []; document.querySelector('#logTable tbody').innerHTML=''; drawChart(); saveState(); }
   });
-  document.getElementById('manualSync').addEventListener('click', step); // Tombol sync sekarang = 1 step
+  document.getElementById('manualSync').addEventListener('click', step);
   document.getElementById('refreshPage').addEventListener('click', () => location.reload());
   document.getElementById('btnPause').addEventListener('click', ()=>{
     paused = !paused; document.getElementById('btnPause').textContent = paused ? 'Resume' : 'Pause';
@@ -475,28 +466,23 @@ function applyControlsUI(){
   a.textContent = 'Aerator: ' + (controls.aerator ? 'ON' : 'OFF'); 
   a.style.background = controls.aerator ? '#12e5a1' : '#ff6b6b';
   
-  // (BARU) Update indikator HANYA jika Otomasi ON
   if(automationActive) {
     document.getElementById('autoIndicatorPump').classList.toggle('active', controls.pump);
     document.getElementById('autoIndicatorAerator').classList.toggle('active', controls.aerator);
   }
 }
 function updateVisualsFromReading(reading){
-  const vis = { ...reading }; // Gunakan reading terbaru
+  const vis = { ...reading };
   state.visual = vis;
   
-  // 1. Update Level Air
-  const levelPct = Math.max(0, Math.min(100, vis.level)); // Clamp 0-100
+  const levelPct = Math.max(0, Math.min(100, vis.level));
   document.getElementById('waterBox').style.height = (levelPct) + '%';
   document.getElementById('visLevel').textContent = levelPct.toFixed(0) + '%';
-
-  // 2. Teks Lainnya
   document.getElementById('visTurb').textContent = vis.turb.toFixed(1) + ' NTU';
   document.getElementById('visTemp').textContent = vis.temp.toFixed(1) + ' °C';
   document.getElementById('visPH').textContent = vis.ph.toFixed(2);
   document.getElementById('visDO').textContent = vis.do.toFixed(2) + ' mg/L';
 
-  // 3. Visual Suhu & Kekeruhan (Gradien)
   let turbColor;
   if(vis.turb <= 25) turbColor = {r:4,g:120,b:255};
   else if(vis.turb <= 50) turbColor = {r:20,g:180,b:140};
@@ -514,10 +500,8 @@ function updateVisualsFromReading(reading){
   document.getElementById('waterBox').style.background = `linear-gradient(180deg, ${topColor} 20%, ${bottomColor} 100%)`;
   document.getElementById('surfaceHeat').style.background = `linear-gradient(180deg, rgba(255,${Math.round(200*tempFactor)},${Math.round(80*tempFactor)},${0.12*tempFactor}), rgba(255,255,255,0))`;
 
-  // 4. Visual Kekeruhan (Partikel)
   generateParticles(vis.turb);
 
-  // 5. Visual pH (Bar)
   const phBar = document.getElementById('phBar');
   let phColor = 'var(--ph-good)';
   if (vis.ph < 6.5) phColor = 'var(--ph-acid)';
@@ -527,11 +511,9 @@ function updateVisualsFromReading(reading){
   phBar.style.height = phHeight + '%';
   phBar.style.backgroundColor = phColor;
   
-  // 6. Visual DO (Gelembung)
   generateBubbles(vis.do, vis.ph);
 }
 
-/* Fungsi Partikel & Gelembung */
 function generateParticles(turbVal) {
   const container = document.getElementById('pondParticles'); container.innerHTML = '';
   let count = 0; let particleColor = 'rgba(255, 255, 255, 0.1)'; let baseSize = 2;
@@ -573,98 +555,109 @@ function generateBubbles(doVal, phVal){
 }
 
 /* =========================
-  Chart & Logging
+  Chart & Logging (VERSI LENGKAP)
   ========================= */
-function initChart(){ /* ... (Tidak Berubah) ... */ }
-function drawChart(){ /* ... (Tidak Berubah) ... */ }
-function appendLogRow(r){ /* ... (Tidak Berubah) ... */ }
+function initChart(){
+  const ctx = document.getElementById('chartMain').getContext('2d');
+  chart = new Chart(ctx, {
+    type:'line',
+    data:{labels:[], datasets:[
+      {label:'Suhu (°C)', data:[], borderColor:'#00d4ff', tension:0.3, yAxisID:'y'},
+      {label:'pH', data:[], borderColor:'#ff7b7b', tension:0.3, yAxisID:'y2'}
+    ]},
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      stacked:false,
+      scales:{
+        x: { ticks: { color: 'rgba(255,255,255,0.4)' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y:{ 
+          type:'linear', display:true, position:'left', title:{display:true,text:'Suhu (°C)', color: '#00d4ff'},
+          ticks: { color: '#00d4ff' }, grid: { color: 'rgba(255,255,255,0.05)' }
+        },
+        y2:{ 
+          type:'linear', display:true, position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'pH', color: '#ff7b7b'},
+          ticks: { color: '#ff7b7b' }
+        }
+      },
+      plugins:{legend:{position:'bottom', labels: { color: 'rgba(255,255,255,0.7)' }}}
+    }
+  });
+}
+function drawChart(){
+  if(!chart) return;
+  const labels = state.history.slice(-windowSize).map(s=>s.time);
+  const temps = state.history.slice(-windowSize).map(s=>s.temp);
+  const phs = state.history.slice(-windowSize).map(s=>s.ph);
+  chart.data.labels = labels; 
+  chart.data.datasets[0].data = temps; 
+  chart.data.datasets[1].data = phs; 
+  chart.update();
+}
+function appendLogRow(r){
+  const tbody = document.querySelector('#logTable tbody');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${r.time}</td><td>${r.temp.toFixed(2)}</td><td>${r.ph.toFixed(2)}</td><td>${r.do.toFixed(2)}</td><td>${r.turb.toFixed(1)}</td><td>${r.level.toFixed(1)}%</td>`;
+  tbody.insertBefore(tr, tbody.firstChild);
+  while(tbody.children.length > 300) tbody.removeChild(tbody.lastChild);
+}
+
 
 /* =======================================
-  (REVISI) Otomasi & Simulasi Data
+  Otomasi & Simulasi Data
   ======================================= */
-
-/* (BARU) Fungsi Logika Otomasi */
 function runAutomationLogic(current) {
   if (!automationActive) {
-    // Jika Otomasi OFF, jangan lakukan apa-apa
-    // Indikator akan dimatikan oleh tombol toggle
     return;
   }
-
-  // --- Logika Aerator (DO) ---
-  if (current.do < 5.0) { // Batas bawah
-    controls.aerator = true; // Nyalakan
-  } else if (current.do > 6.5) { // Batas atas
-    controls.aerator = false; // Matikan
+  if (current.do < 5.0) {
+    controls.aerator = true;
+  } else if (current.do > 6.5) {
+    controls.aerator = false;
   }
-  // (Jika di antara 5.0 dan 6.5, biarkan status terakhir)
-
-  // --- Logika Pompa (Level Air) ---
-  if (current.level < 80.0) { // Batas bawah (misal 80%)
-    controls.pump = true; // Nyalakan
-  } else if (current.level > 95.0) { // Batas atas (misal 95%)
-    controls.pump = false; // Matikan
+  if (current.level < 80.0) {
+    controls.pump = true;
+  } else if (current.level > 95.0) {
+    controls.pump = false;
   }
-  
-  // Update UI Tombol & Indikator
   applyControlsUI();
 }
 
 function seedInitial(){
   for(let i=0;i<12;i++){
     const base = {nominalTemp:29, nominalPH:7.1, nominalDO:6.0, nominalTurb:30, nominalLevel:90};
-    const r = makeReading(Object.assign({id:1}, base), true); // true = seeding
+    const r = makeReading(Object.assign({id:1}, base), true);
     state.history.push(r);
   }
 }
 
-/* (REVISI) Fungsi Pembuat Data */
 function makeReading(base, isSeeding = false){
-  // isSeeding = true -> Hanya data acak murni
-  // isSeeding = false -> Terapkan tren (naik/turun)
-  
   let level = base.nominalLevel;
   let doV = base.nominalDO;
   
   if (!isSeeding) {
-    // Terapkan tren berdasarkan kontrol
-    if (controls.pump) {
-      level += 5.0; // Pompa nyala, level naik cepat
-    } else {
-      level -= 0.5; // Pompa mati, level turun pelan (evaporasi)
-    }
+    if (controls.pump) { level += 5.0; } 
+    else { level -= 0.5; }
     
-    if (controls.aerator) {
-      doV += 0.5; // Aerator nyala, DO naik
-    } else {
-      doV -= 0.2; // Aerator mati, DO turun (dikonsumsi)
-    }
+    if (controls.aerator) { doV += 0.5; } 
+    else { doV -= 0.2; }
   }
 
-  // Tambahkan Fluktuasi Acak (Noise)
   const temp = +(base.nominalTemp + (Math.random()-0.5)*0.5).toFixed(2);
   const ph = +(base.nominalPH + (Math.random()-0.5)*0.1).toFixed(2);
   const turb = Math.max(5, +(base.nominalTurb + (Math.random()-0.5)*3).toFixed(1));
-  
-  // (REVISI) Clamp (Batas) baru
   const finalLevel = Math.max(0, Math.min(100, +(level + (Math.random()-0.5)*1).toFixed(1)));
   const finalDO = Math.max(0, Math.min(10, +(doV + (Math.random()-0.5)*0.1).toFixed(2)));
   
   return { time: nowStr(), temp, ph, do: finalDO, turb, level: finalLevel };
 }
 
-/* (REVISI) Fungsi Siklus Utama */
 function step(){
   if(paused) return;
 
-  const last = state.visual; // Ambil data terakhir dari visual
-  
-  // 1. (BARU) Jalankan Otomasi
-  //    Otomasi akan melihat data 'last' dan memutuskan 'controls'
+  const last = state.visual;
   runAutomationLogic(last);
   
-  // 2. (REVISI) Buat Data Baru
-  //    Fungsi makeReading akan melihat 'controls' dan menentukan data selanjutnya
   const base = {
     nominalTemp: last.temp,
     nominalPH: last.ph,
@@ -672,12 +665,11 @@ function step(){
     nominalTurb: last.turb,
     nominalLevel: last.level
   };
-  const r = makeReading(base, false); // false = bukan seeding
+  const r = makeReading(base, false);
   
   state.history.push(r);
   if(state.history.length > 500) state.history.shift();
   
-  // 3. Update UI
   updateVisualsFromReading(r);
   updateValueCards(r);
   appendLogRow(r);
@@ -685,30 +677,74 @@ function step(){
   updateOverallBadge();
   document.getElementById('lastSync').textContent = nowStr();
   
-  // 4. Simpan status
   saveState();
-  saveControls(); // Simpan status kontrol
+  saveControls();
 }
 
 /* =========================
-  Value cards & overall status
+  Value cards & status (VERSI LENGKAP)
   ========================= */
-function updateValueCards(latest){ /* ... (Tidak Berubah) ... */ }
-function getStatus(latest){ /* ... (Tidak Berubah) ... */ }
-function updateOverallBadge(){ /* ... (Tidak Berubah) ... */ }
+function updateValueCards(latest){
+  document.getElementById('valTemp').textContent = latest.temp.toFixed(2) + ' °C';
+  document.getElementById('valPH').textContent = latest.ph.toFixed(2);
+  document.getElementById('valDO').textContent = latest.do.toFixed(2) + ' mg/L';
+  document.getElementById('valTurb').textContent = latest.turb.toFixed(1) + ' NTU';
+}
+
+function getStatus(latest){
+  const t = latest.temp, ph = latest.ph, d = latest.do;
+  if(t<24 || t>33 || ph<6.2 || ph>8.5 || d<4) return {level:'danger',text:'BAHAYA'};
+  if(t<25 || t>31 || ph<6.5 || ph>8.0 || d<5) return {level:'warn',text:'PERLU PERHATIAN'};
+  return {level:'ok',text:'NORMAL'};
+}
+
+function updateOverallBadge(){
+  const last = state.history.length ? state.history[state.history.length-1] : null;
+  const el = document.getElementById('overallBadge');
+  if(!last){ el.style.background='rgba(128,128,128,0.06)'; el.style.color='#cbd5e1'; el.textContent='NO DATA'; return; }
+  const st = getStatus(last);
+  if(st.level === 'ok'){ el.style.background='rgba(34,197,94,0.12)'; el.style.color='#86efac'; }
+  else if(st.level === 'warn'){ el.style.background='rgba(255,185,0,0.08)'; el.style.color='#ffd58a'; }
+  else { el.style.background='rgba(255,80,80,0.06)'; el.style.color='#ff9aa2'; }
+  el.textContent = st.text;
+}
 
 /* =========================
-  CSV Export
+  Mock send control
   ========================= */
-function exportCSV(){ /* ... (Tidak Berubah) ... */ }
+function sendControlMock(){
+  console.log('Send control (mock):', controls);
+}
+
+/* =========================
+  CSV Export (VERSI LENGKAP)
+  ========================= */
+function exportCSV(){
+  const rows=[['time','temp','ph','do','turbidity','level']];
+  state.history.forEach(h => rows.push([h.time, h.temp.toFixed(2), h.ph.toFixed(2), h.do.toFixed(2), h.turb.toFixed(1), h.level.toFixed(1)]));
+  const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.getElementById('downloadLink');
+  a.href = url;
+  a.download = 'tambak_data_'+(new Date().toISOString().slice(0,10))+'.csv';
+  a.textContent = 'Klik DI SINI untuk Unduh CSV';
+  a.style.display = 'block';
+  
+  setTimeout(() => {
+    a.style.display = 'none';
+    URL.revokeObjectURL(url);
+  }, 10000);
+}
 
 /* =========================
   Init & loop
   ========================= */
 function startApp(){
   loadState(); 
-  loadControls(); // Muat status kontrol terakhir
-  applyControlsUI(); // Terapkan UI kontrol
+  loadControls();
+  applyControlsUI();
   setupEventListeners();
   
   document.getElementById('pondName').textContent = state.pondName;
@@ -730,9 +766,7 @@ function startApp(){
   LOGIN SCRIPT
   ========================= */
 window.addEventListener('load', () => {
-  const KATA_SANDI = "tambak123";
-  // ... (Logika Login tidak berubah) ...
-  // ... (Saya hapus duplikasi logika login untuk keringkasan) ...
+  const KATA_SANDI = "tambakzaenal";
   const loginScreen = document.getElementById('loginScreen');
   const appScreen = document.getElementById('app');
   const passInput = document.getElementById('passInput');
