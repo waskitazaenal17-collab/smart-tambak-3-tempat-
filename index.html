@@ -3,266 +3,309 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Smart Fish Pond Dashboard PRO+ (Dark)</title>
-
-<!-- Chart.js CDN -->
+<title>Smart Fish Pond — Visual PRO v2.0</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
-  :root{
-    --bg:#0f1724;
-    --panel:#0b1320;
-    --muted:#9aa4b2;
-    --accent:#00d4ff;
-    --accent2:#ff7b7b;
-    --card:#0f1a2b;
-    --glass: rgba(255,255,255,0.03);
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    background: linear-gradient(180deg,var(--bg),#08101a);
-    color:#e6eef6;
-    font-family: Inter,Ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-  }
+:root{
+  --bg: #071019;
+  --panel: #0b1722;
+  --muted: #9fb3c8;
+  --accent: #00d4ff;
+  --accent2: #ff7b7b;
+  --glass: rgba(255,255,255,0.03);
+  --card-radius: 12px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg,var(--bg),#031018 120%);
+  color:#e6eef6;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
 
-  header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding:14px 20px;
-    background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-bottom:1px solid rgba(255,255,255,0.04);
-    position:sticky; top:0; z-index:40;
-  }
-  .brand {
-    display:flex; align-items:center; gap:12px;
-  }
-  .logo{
-    width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#4a8cff);display:flex;align-items:center;justify-content:center;font-weight:700;
-  }
-  .brand h1{margin:0;font-size:1.05rem}
-  .brand p{margin:0;font-size:0.78rem;color:var(--muted)}
+/* Header */
+header{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 18px; border-bottom:1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  position:sticky; top:0; z-index:50;
+}
+.brand {display:flex;align-items:center;gap:12px}
+.logo{
+  width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#00cfff,#4a8cff);
+  display:flex;align-items:center;justify-content:center;font-weight:800;color:#021022;
+}
+.brand h1{margin:0;font-size:1.05rem}
+.brand p{margin:0;font-size:0.78rem;color:var(--muted)}
 
-  /* Layout */
-  main{display:flex; gap:18px; padding:18px; max-width:1200px; margin:18px auto;}
-  nav{width:260px; min-width:220px;}
-  .content{flex:1; min-width:300px;}
+/* Layout */
+main{display:flex; gap:18px; padding:18px; max-width:1200px; margin:18px auto;}
+nav{width:300px; min-width:260px;}
+.content{flex:1; min-width:320px}
 
-  /* Sidebar */
-  .panel{background:linear-gradient(180deg,var(--panel),var(--card)); border-radius:12px; padding:14px;border:1px solid rgba(255,255,255,0.02);}
-  .section-title{font-size:0.85rem;color:var(--muted);margin-bottom:8px}
-  .user-box{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-  .user-avatar{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#00c6ff,#0077ff);display:flex;align-items:center;justify-content:center;font-weight:700}
-  .small{font-size:0.82rem;color:var(--muted)}
+/* Sidebar panel */
+.panel{background:linear-gradient(180deg,var(--panel), #06101a); border-radius:var(--card-radius);
+  padding:14px; border:1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+.section-title{font-size:0.85rem;color:var(--muted);margin-bottom:8px}
+.user-box{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.user-avatar{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#00cfff,#0077ff);
+  display:flex;align-items:center;justify-content:center;font-weight:700;color:#021022}
+.small{font-size:0.82rem;color:var(--muted)}
 
-  select, button, input{
-    background:transparent;border:1px solid rgba(255,255,255,0.06); color:inherit; padding:8px 10px;border-radius:8px;
-  }
-  .btn{
-    background:linear-gradient(90deg,var(--accent),#48b3ff); border:none; color:#021022; font-weight:600; padding:9px 12px; border-radius:8px; cursor:pointer;
-  }
-  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04); color:var(--muted); cursor:pointer}
+/* inputs */
+select, button, input{background:transparent;border:1px solid rgba(255,255,255,0.06); color:inherit; padding:8px 10px;border-radius:8px}
+.btn{background:linear-gradient(90deg,var(--accent),#48b3ff); border:none; color:#021022; font-weight:700; padding:9px 12px; border-radius:8px; cursor:pointer}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04); color:var(--muted); cursor:pointer}
 
-  /* Cards */
-  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;}
-  .card{background:var(--glass); padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.03);}
-  .card h3{margin:0;font-size:0.95rem}
-  .bigval{font-size:1.6rem;font-weight:700; margin-top:6px}
+/* Cards & grid */
+.grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:12px;border-radius:10px; border:1px solid rgba(255,255,255,0.03)}
+.card h3{margin:0;font-size:0.95rem}
+.bigval{font-size:1.6rem;font-weight:700;margin-top:6px}
 
-  /* Status badges */
-  .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:600;font-size:0.86rem}
-  .good{background:rgba(28,200,120,0.12); color:#7ee3a3; border:1px solid rgba(28,200,120,0.14)}
-  .warn{background:rgba(255,185,0,0.08); color:#ffd58a; border:1px solid rgba(255,185,0,0.12)}
-  .danger{background:rgba(255,80,80,0.08); color:#ff9aa2; border:1px solid rgba(255,80,80,0.12)}
+/* pond visual */
+.pond-wrap{display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start}
+.pond-visual{
+  width:360px; max-width:100%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+  padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,0.03);
+}
+.pond-label{font-weight:700;margin-bottom:6px}
+.pond-canvas{
+  position:relative; width:100%; height:220px; border-radius:10px; overflow:hidden; background: linear-gradient(180deg,#06202b,#031018);
+  border:1px solid rgba(255,255,255,0.02);
+}
 
-  /* Controls */
-  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  .ctl-btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer;color:#021022;font-weight:700}
-  .on{background: #12e5a1}
-  .off{background:#ff6b6b}
+/* water container */
+.water-container{position:absolute; left:0; right:0; bottom:0; top:0; display:flex; align-items:flex-end; justify-content:center}
+.water {
+  width:95%; max-width:340px; height:80%; background:rgba(0,100,255,0.2);
+  border-radius:8px; position:relative; overflow:hidden; transition:height 1s ease, background 1s linear;
+  box-shadow: inset 0 8px 40px rgba(0,0,0,0.3);
+  border:1px solid rgba(255,255,255,0.02);
+}
+.water-level {
+  position:absolute; left:0; right:0; bottom:0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.0));
+  transition:height 1s ease;
+}
 
-  /* Chart area */
-  .chart-area{margin-top:12px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)); padding:12px; border-radius:10px;}
-  canvas{max-height:340px}
+/* surface highlight (temperature overlay) */
+.surface-heat{
+  position:absolute; left:0; right:0; top:0; height:30%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+  mix-blend-mode: overlay; pointer-events:none;
+}
 
-  /* table */
-  table{width:100%;border-collapse:collapse;margin-top:10px}
-  th,td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.02); text-align:left; font-size:0.9rem}
-  th{color:var(--muted); font-weight:600}
+/* bubbles */
+.bubble{
+  position:absolute; bottom:10px; left:50%; transform:translateX(-50%); width:12px; height:12px; background:rgba(255,255,255,0.8);
+  border-radius:50%; opacity:0.85; animation: rise 4s linear infinite; filter:blur(0.6px);
+}
+@keyframes rise {
+  0% { transform: translateX(-50%) translateY(0) scale(0.6); opacity:0.9; }
+  100% { transform: translateX(-50%) translateY(-230px) scale(1.0); opacity:0.0; }
+}
 
-  /* Login modal */
-  #loginModal{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.6)); z-index:80}
-  .login-card{width:360px;padding:18px;border-radius:12px;background:linear-gradient(180deg, #081018, #071019); border:1px solid rgba(255,255,255,0.04); box-shadow:0 8px 30px rgba(0,0,0,0.6)}
-  .field{margin:10px 0}
-  .warn-txt{color:#ff9aa2;font-weight:700}
+/* chart area */
+.chart-area{margin-top:12px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)); padding:12px; border-radius:10px}
+canvas{max-height:300px;padding:6px}
 
-  /* responsive */
-  @media(max-width:900px){
-    main{padding:12px;flex-direction:column}
-    nav{width:100%}
-  }
+/* log table */
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{padding:8px;border-bottom:1px dashed rgba(255,255,255,0.02); text-align:left; font-size:0.9rem}
+th{color:var(--muted); font-weight:600}
 
+/* login modal */
+#loginModal{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.6)); z-index:90}
+.login-card{width:360px;padding:18px;border-radius:12px;background:linear-gradient(180deg,#081018,#071019); border:1px solid rgba(255,255,255,0.04); box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+.field{margin:8px 0}
+.warn-txt{color:#ff9aa2;font-weight:700}
+
+/* responsive */
+@media(max-width:1000px){
+  main{flex-direction:column; padding:12px}
+  nav{width:100%}
+  .pond-visual{width:100%}
+}
 </style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <div class="logo">IoT</div>
-      <div>
-        <h1>Smart Fish Pond — PRO+</h1>
-        <p class="small">Monitoring · Automation · Analytics</p>
-      </div>
-    </div>
-
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div class="small">User: <span id="hdrUser">—</span></div>
-      <button id="logoutBtn" class="btn-ghost" style="display:none" onclick="doLogout()">Logout</button>
-    </div>
-  </header>
-
-  <main>
-    <!-- SIDEBAR -->
-    <nav>
-      <div class="panel">
-        <div class="user-box">
-          <div class="user-avatar" id="avatarTxt">Z</div>
-          <div>
-            <div id="sideUser">Guest</div>
-            <div class="small" id="sideRole">Operator</div>
-          </div>
-        </div>
-
-        <div class="section-title">Pilih Tambak</div>
-        <select id="pondSelect" style="width:100%; margin-bottom:12px"></select>
-
-        <div class="section-title">Kontrol Cepat</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button id="btnPump" class="ctl-btn on">Pompa: ON</button>
-          <button id="btnAer" class="ctl-btn off">Aerator: OFF</button>
-        </div>
-
-        <div style="margin-top:12px" class="section-title">Export & Tools</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-          <button class="btn" id="exportCsv">Export CSV</button>
-          <button class="btn-ghost" id="toggleSim">SIM: ON</button>
-        </div>
-
-        <div style="margin-top:16px" class="section-title">Info Sistem</div>
-        <div class="small">Mode: <span id="modeLabel">Simulation</span></div>
-        <div class="small">Last sync: <span id="lastSync">-</span></div>
-      </div>
-    </nav>
-
-    <!-- CONTENT -->
-    <section class="content">
-      <div class="panel">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-          <div>
-            <div class="section-title">Status Tambak</div>
-            <h2 id="pondName">--</h2>
-          </div>
-          <div style="text-align:right">
-            <div class="small">Overall</div>
-            <div id="overallBadge" class="badge good">NORMAL</div>
-          </div>
-        </div>
-
-        <div class="grid" style="margin-top:12px">
-          <div class="card">
-            <h3>🌡️ Suhu</h3>
-            <div class="bigval" id="valTemp">-- °C</div>
-            <div class="small">Threshold: 24°C - 32°C</div>
-          </div>
-
-          <div class="card">
-            <h3>⚗️ pH</h3>
-            <div class="bigval" id="valPH">--</div>
-            <div class="small">Threshold: 6.5 - 8.0</div>
-          </div>
-
-          <div class="card">
-            <h3>🫧 DO</h3>
-            <div class="bigval" id="valDO">-- mg/L</div>
-            <div class="small">Threshold: &gt;= 5 mg/L</div>
-          </div>
-
-          <div class="card">
-            <h3>🌫️ Kekeruhan</h3>
-            <div class="bigval" id="valTurb">-- NTU</div>
-            <div class="small">Lower is better</div>
-          </div>
-
-        </div>
-
-        <!-- charts -->
-        <div class="chart-area" style="margin-top:16px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div class="section-title">Grafik Riwayat (Suhu & pH)</div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <button class="btn-ghost" id="btnReset">Reset Data</button>
-              <div class="small">Window: <select id="windowSel">
-                <option value="10">10 pts</option>
-                <option value="20" selected>20 pts</option>
-                <option value="50">50 pts</option>
-              </select></div>
-            </div>
-          </div>
-          <canvas id="chartMain"></canvas>
-
-          <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
-            <div class="small">Recent readings</div>
-            <div style="flex:1"></div>
-            <div class="small">Auto-update every <span id="autoFreq">2s</span></div>
-          </div>
-
-          <table id="logTable" style="margin-top:8px">
-            <thead><tr><th>Waktu</th><th>Tambak</th><th>Suhu (°C)</th><th>pH</th><th>DO</th><th>Turbidity</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-
-      </div>
-    </section>
-  </main>
-
-  <!-- Login Modal -->
-  <div id="loginModal">
-    <div class="login-card">
-      <h2>Login Petambak</h2>
-      <div class="field">
-        <label class="small">Username</label>
-        <input id="inUser" placeholder="username" />
-      </div>
-      <div class="field">
-        <label class="small">Password</label>
-        <input id="inPass" type="password" placeholder="password" />
-      </div>
-      <div style="display:flex;gap:10px; margin-top:12px">
-        <button class="btn" onclick="doLogin()">Login</button>
-        <button class="btn-ghost" onclick="fillDemo()">Isi Demo</button>
-      </div>
-      <p style="margin-top:10px" class="warn-txt" id="loginWarn"></p>
-      <p class="small" style="margin-top:8px;color:var(--muted)">Username: <b>zaenal</b> &nbsp; Password: <b>zaenalganteng</b></p>
+<header>
+  <div class="brand">
+    <div class="logo">IoT</div>
+    <div>
+      <h1>Smart Fish Pond — Visual PRO v2.0</h1>
+      <p class="small">Realtime · Visual Pond · Control · Export</p>
     </div>
   </div>
 
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="small">User: <span id="hdrUser">—</span></div>
+    <button id="logoutBtn" class="btn-ghost" style="display:none" onclick="doLogout()">Logout</button>
+  </div>
+</header>
+
+<main>
+  <nav>
+    <div class="panel">
+      <div class="user-box">
+        <div class="user-avatar" id="avatarTxt">Z</div>
+        <div>
+          <div id="sideUser">Guest</div>
+          <div class="small" id="sideRole">Operator</div>
+        </div>
+      </div>
+
+      <div class="section-title">Pilih Tambak</div>
+      <select id="pondSelect" style="width:100%; margin-bottom:12px"></select>
+
+      <div class="section-title">Kontrol Cepat</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="btnPump" class="btn">Pompa</button>
+        <button id="btnAer" class="btn">Aerator</button>
+      </div>
+
+      <div style="margin-top:12px" class="section-title">Export & Tools</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+        <button class="btn" id="exportCsv">Export CSV</button>
+        <button class="btn-ghost" id="toggleSim">SIM: ON</button>
+      </div>
+
+      <div style="margin-top:16px" class="section-title">Info Sistem</div>
+      <div class="small">Mode: <span id="modeLabel">Simulation</span></div>
+      <div class="small">Last sync: <span id="lastSync">-</span></div>
+    </div>
+  </nav>
+
+  <section class="content">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div>
+          <div class="section-title">Status Tambak</div>
+          <h2 id="pondName">--</h2>
+        </div>
+        <div style="text-align:right">
+          <div class="small">Overall</div>
+          <div id="overallBadge" class="badge" style="background:rgba(34,197,94,0.12);color:#86efac;padding:6px 10px;border-radius:999px">NORMAL</div>
+        </div>
+      </div>
+
+      <div class="pond-wrap" style="margin-top:12px">
+        <div class="pond-visual">
+          <div class="pond-label">Visualisasi Kolam</div>
+          <div class="pond-canvas" id="pondCanvas">
+            <div class="water-container">
+              <div class="water" id="waterBox" aria-hidden="true" style="height:60%;">
+                <div class="water-level" id="waterLevel" style="height:60%"></div>
+                <div class="surface-heat" id="surfaceHeat"></div>
+                <!-- bubbles container -->
+                <div id="bubbles" style="position:absolute; left:0; right:0; top:0; bottom:0; pointer-events:none"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <div class="small">Level: <b id="visLevel">--%</b></div>
+            <div class="small">Turbidity: <b id="visTurb">-- NTU</b></div>
+            <div class="small">Suhu: <b id="visTemp">-- °C</b></div>
+            <div class="small">pH: <b id="visPH">--</b></div>
+            <div class="small">DO: <b id="visDO">-- mg/L</b></div>
+          </div>
+        </div>
+
+        <div style="flex:1">
+          <div class="grid">
+            <div class="card">
+              <h3>🌡️ Suhu</h3>
+              <div class="bigval" id="valTemp">-- °C</div>
+              <div class="small">Threshold: 24 - 32 °C</div>
+            </div>
+            <div class="card">
+              <h3>⚗️ pH</h3>
+              <div class="bigval" id="valPH">--</div>
+              <div class="small">Threshold: 6.5 - 8.0</div>
+            </div>
+            <div class="card">
+              <h3>🫧 DO</h3>
+              <div class="bigval" id="valDO">-- mg/L</div>
+              <div class="small">Threshold: ≥ 5 mg/L</div>
+            </div>
+            <div class="card">
+              <h3>🌫️ Kekeruhan</h3>
+              <div class="bigval" id="valTurb">-- NTU</div>
+              <div class="small">Lower is better</div>
+            </div>
+          </div>
+
+          <div class="chart-area">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div class="section-title">Grafik Riwayat (Suhu & pH)</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn-ghost" id="btnReset">Reset Data</button>
+                <div class="small">Window:
+                  <select id="windowSel">
+                    <option value="10">10 pts</option>
+                    <option value="20" selected>20 pts</option>
+                    <option value="50">50 pts</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <canvas id="chartMain"></canvas>
+
+            <table id="logTable">
+              <thead><tr><th>Waktu</th><th>Tambak</th><th>Suhu</th><th>pH</th><th>DO</th><th>Turbidity</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<!-- Login Modal -->
+<div id="loginModal">
+  <div class="login-card">
+    <h2>Login Petambak</h2>
+    <div class="field">
+      <label class="small">Username</label>
+      <input id="inUser" placeholder="username (zaenal)" />
+    </div>
+    <div class="field">
+      <label class="small">Password</label>
+      <input id="inPass" type="password" placeholder="password (zaenalganteng)" />
+    </div>
+    <div style="display:flex;gap:10px; margin-top:12px">
+      <button class="btn" onclick="doLogin()">Login</button>
+      <button class="btn-ghost" onclick="fillDemo()">Isi Demo</button>
+    </div>
+    <p style="margin-top:10px" class="warn-txt" id="loginWarn"></p>
+    <p class="small" style="margin-top:8px;color:var(--muted)">Username: <b>zaenal</b> • Password: <b>zaenalganteng</b></p>
+  </div>
+</div>
+
 <script>
 /* =========================
-   App State & Defaults
+   State & Defaults
    ========================= */
 const CREDENTIAL = {user:'zaenal', pass:'zaenalganteng'};
 const POND_IDS = [1,2,3];
 const DEFAULT_PONDS = {
-  1: {id:1,name:'Tambak Lele', species:'Lele', pump:true, aerator:false, history:[]},
-  2: {id:2,name:'Tambak Nila', species:'Nila', pump:false, aerator:true, history:[]},
-  3: {id:3,name:'Tambak Gurame', species:'Gurame', pump:true, aerator:true, history:[]}
+  1:{id:1,name:'Tambak Lele',species:'Lele',pump:true,aerator:false,history:[],controls:{pump:true,aerator:false},visual:{level:60, turb:30, temp:29, ph:7.1, do:6.0}},
+  2:{id:2,name:'Tambak Nila',species:'Nila',pump:false,aerator:true,history:[],controls:{pump:false,aerator:true},visual:{level:55, turb:40, temp:28, ph:6.8, do:5.8}},
+  3:{id:3,name:'Tambak Gurame',species:'Gurame',pump:true,aerator:true,history:[],controls:{pump:true,aerator:true},visual:{level:72, turb:25, temp:29.5, ph:7.3, do:6.5}}
 };
 
-let ponds = {};           // will load from localStorage or default
+let ponds = {};
 let curPond = 1;
 let simMode = true;
 let updateInterval = 2000; // ms
@@ -270,15 +313,30 @@ let chart = null;
 let maxWindow = 20;
 
 /* =========================
-   Helpers
+   Utilities: storage, time
    ========================= */
-function saveState(){
-  localStorage.setItem('sfp_state', JSON.stringify(ponds));
+function saveState(){ localStorage.setItem('sfp_state', JSON.stringify(ponds)); }
+function loadState(){ const v=localStorage.getItem('sfp_state'); if(v){ ponds=JSON.parse(v);} else { ponds = JSON.parse(JSON.stringify(DEFAULT_PONDS)); saveState(); } }
+function nowStr(){ return new Date().toLocaleString(); }
+
+/* =========================
+   Login
+   ========================= */
+function doLogin(){
+  const u = document.getElementById('inUser').value.trim();
+  const p = document.getElementById('inPass').value;
+  const w = document.getElementById('loginWarn');
+  if(u===CREDENTIAL.user && p===CREDENTIAL.pass){
+    w.textContent=''; localStorage.setItem('sfp_user', u); document.getElementById('loginModal').style.display='none';
+    setUserUI(u); initApp();
+  } else w.textContent='Username atau password salah!';
 }
-function loadState(){
-  const v = localStorage.getItem('sfp_state');
-  if(v){ ponds = JSON.parse(v); } else { ponds = JSON.parse(JSON.stringify(DEFAULT_PONDS)); saveState(); }
-}
+function fillDemo(){ document.getElementById('inUser').value='zaenal'; document.getElementById('inPass').value='zaenalganteng'; }
+function doLogout(){ localStorage.removeItem('sfp_user'); document.getElementById('loginModal').style.display='flex'; document.getElementById('logoutBtn').style.display='none'; }
+
+/* =========================
+   UI helpers
+   ========================= */
 function setUserUI(username){
   document.getElementById('hdrUser').textContent = username;
   document.getElementById('sideUser').textContent = username;
@@ -286,109 +344,141 @@ function setUserUI(username){
   document.getElementById('logoutBtn').style.display = 'inline-block';
 }
 
-function nowStr(){ return new Date().toLocaleString(); }
-
 /* =========================
-   Login Handling
-   ========================= */
-function doLogin(){
-  const u = document.getElementById('inUser').value.trim();
-  const p = document.getElementById('inPass').value;
-  const w = document.getElementById('loginWarn');
-  if(u===CREDENTIAL.user && p===CREDENTIAL.pass){
-    w.textContent='';
-    localStorage.setItem('sfp_user', u);
-    document.getElementById('loginModal').style.display='none';
-    setUserUI(u);
-    initApp();
-  } else {
-    w.textContent = 'Username atau password salah!';
-  }
-}
-function fillDemo(){ document.getElementById('inUser').value = 'zaenal'; document.getElementById('inPass').value='zaenalganteng'; }
-function doLogout(){
-  localStorage.removeItem('sfp_user');
-  document.getElementById('loginModal').style.display='flex';
-  document.getElementById('logoutBtn').style.display='none';
-}
-
-/* =========================
-   UI Init
+   Populate ponds select and render
    ========================= */
 function populatePondSelect(){
-  const sel = document.getElementById('pondSelect');
-  sel.innerHTML = '';
+  const sel = document.getElementById('pondSelect'); sel.innerHTML='';
   POND_IDS.forEach(id=>{
-    const opt = document.createElement('option');
-    opt.value = id;
-    opt.textContent = ponds[id].name + ' — ' + ponds[id].species;
-    sel.appendChild(opt);
+    const opt = document.createElement('option'); opt.value=id; opt.textContent = ponds[id].name + ' — ' + ponds[id].species; sel.appendChild(opt);
   });
   sel.value = curPond;
-  sel.onchange = ()=>{ curPond = parseInt(sel.value); renderPond(); };
+  sel.onchange = ()=>{ curPond = parseInt(sel.value); renderPond(); }
 }
 
+/* Render pond dashboard values */
 function renderPond(){
   const p = ponds[curPond];
-  document.getElementById('pondName').textContent = p.name + ' ('+p.species+')';
+  document.getElementById('pondName').textContent = p.name + ' (' + p.species + ')';
   // controls
-  const pumpBtn = document.getElementById('btnPump');
-  const aerBtn = document.getElementById('btnAer');
-  pumpBtn.textContent = 'Pompa: ' + (p.pump ? 'ON' : 'OFF');
-  pumpBtn.className = 'ctl-btn ' + (p.pump ? 'on' : 'off');
-  aerBtn.textContent = 'Aerator: ' + (p.aerator ? 'ON' : 'OFF');
-  aerBtn.className = 'ctl-btn ' + (p.aerator ? 'on' : 'off');
+  const pumpBtn = document.getElementById('btnPump'); const aerBtn = document.getElementById('btnAer');
+  pumpBtn.textContent = 'Pompa: ' + (p.controls.pump ? 'ON' : 'OFF'); pumpBtn.style.background = p.controls.pump ? '#12e5a1' : '#ff6b6b';
+  aerBtn.textContent = 'Aerator: ' + (p.controls.aerator ? 'ON' : 'OFF'); aerBtn.style.background = p.controls.aerator ? '#12e5a1' : '#ff6b6b';
 
-  // latest values if available
+  // visual & cards
   const last = p.history.length ? p.history[p.history.length-1] : null;
-  if(last){
-    setValueDisplays(last);
-    appendLogRow(last);
-  } else {
-    setValueDisplays(null);
-  }
+  const vis = p.visual;
+  updateVisual(vis);
+  if(last){ updateValueCards(last); appendLogRow(last); }
   updateOverallBadge();
   updateLastSync();
   drawChart();
 }
 
 /* =========================
-   Value display & alerts
+   Update visuals: water level, color, bubbles
    ========================= */
-function setValueDisplays(latest){
-  const d = latest || {temp:'--',ph:'--',do:'--',turb:'--',time:'-'};
-  document.getElementById('valTemp').textContent = d.temp === '--' ? '-- °C' : d.temp.toFixed(2)+' °C';
-  document.getElementById('valPH').textContent = d.ph === '--' ? '--' : d.ph.toFixed(2);
-  document.getElementById('valDO').textContent = d.do === '--' ? '-- mg/L' : d.do.toFixed(2)+' mg/L';
-  document.getElementById('valTurb').textContent = d.turb.toFixed ? d.turb.toFixed(1)+' NTU' : d.turb+' NTU';
+function updateVisual(vis){
+  // level percent to height ratio (water element height)
+  const levelPct = Math.max(0, Math.min(100, vis.level));
+  const waterBox = document.getElementById('waterBox');
+  const waterLevel = document.getElementById('waterLevel');
+  const levelPx = levelPct;
+  waterBox.style.height = (Math.max(20, levelPct)) + '%';
+  waterLevel.style.height = (Math.max(20, levelPct)) + '%';
+  document.getElementById('visLevel').textContent = levelPct.toFixed(0) + '%';
+  document.getElementById('visTurb').textContent = vis.turb.toFixed(1) + ' NTU';
+  document.getElementById('visTemp').textContent = vis.temp.toFixed(1) + ' °C';
+  document.getElementById('visPH').textContent = vis.ph.toFixed(2);
+  document.getElementById('visDO').textContent = vis.do.toFixed(2) + ' mg/L';
+
+  // set water color based on turbidity and temperature
+  const turb = vis.turb;
+  // turbidity mapping: clearer=blue, medium=greenish, dirty=brown
+  let turbColor;
+  if(turb <= 30) turbColor = {r:4,g:120,b:255};         // blue
+  else if(turb <= 60) turbColor = {r:20,g:180,b:140};   // greenish
+  else turbColor = {r:150,g:110,b:45};                 // brownish
+
+  // temp overlay: warm -> more orange tint, cold -> bluish
+  const temp = vis.temp;
+  let tempFactor = (temp - 20) / 15; // roughly -20..+35
+  tempFactor = Math.max(0, Math.min(1, tempFactor));
+  // mix turbColor with temp overlay
+  const warm = {r:255,g:120,b:60};
+  const mixed = {
+    r: Math.round(turbColor.r*(1-tempFactor) + warm.r*tempFactor),
+    g: Math.round(turbColor.g*(1-tempFactor) + warm.g*tempFactor),
+    b: Math.round(turbColor.b*(1-tempFactor) + warm.b*tempFactor)
+  };
+  const bg = `rgba(${mixed.r},${mixed.g},${mixed.b},0.85)`;
+  waterBox.style.background = `linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06)), ${bg}`;
+
+  // surface heat overlay (more orange when hot)
+  const surface = document.getElementById('surfaceHeat');
+  surface.style.background = `linear-gradient(180deg, rgba(255,${Math.round(200*tempFactor)},${Math.round(80*tempFactor)},${0.12*tempFactor}), rgba(255,255,255,0))`;
+
+  // bubbles: number based on DO and pH health
+  createBubbles(vis.do, vis.ph);
 }
 
-/* decide status based on thresholds */
+/* bubble generator */
+function createBubbles(doVal, phVal){
+  const cont = document.getElementById('bubbles'); cont.innerHTML='';
+  // baseline bubble count 0..12
+  let base = Math.round(Math.max(0, Math.min(12, doVal * 2)));
+  // if pH extreme, reduce bubble (unhealthy)
+  if(phVal < 6.5 || phVal > 8.0) base = Math.max(0, base - 4);
+  // create random bubbles across width
+  for(let i=0;i<base;i++){
+    const b = document.createElement('div'); b.className='bubble';
+    const left = 8 + Math.random()*84;
+    b.style.left = left + '%';
+    b.style.bottom = (10 + Math.random()*10) + 'px';
+    const size = 6 + Math.random()*12;
+    b.style.width = size + 'px'; b.style.height = size + 'px';
+    b.style.opacity = 0.6 + Math.random()*0.4;
+    b.style.animationDuration = (3 + Math.random()*3) + 's';
+    b.style.animationDelay = (Math.random()*1.5) + 's';
+    cont.appendChild(b);
+  }
+}
+
+/* =========================
+   Value cards & overall status
+   ========================= */
+function updateValueCards(latest){
+  document.getElementById('valTemp').textContent = latest.temp.toFixed(2) + ' °C';
+  document.getElementById('valPH').textContent = latest.ph.toFixed(2);
+  document.getElementById('valDO').textContent = latest.do.toFixed(2) + ' mg/L';
+  document.getElementById('valTurb').textContent = latest.turb.toFixed(1) + ' NTU';
+}
 function getStatusFor(p){
-  // examine last reading
   const last = p.history.length ? p.history[p.history.length-1] : null;
   if(!last) return {code:'unknown', badge:'good', text:'NO DATA'};
-  const t = last.temp, ph = last.ph, d = last.do;
-  if(t < 24 || t > 33 || ph < 6.2 || ph > 8.5 || d < 4) return {code:'danger', badge:'danger', text:'BAHAYA'};
-  if(t < 25 || t > 31 || ph < 6.5 || ph > 8.0 || d < 5) return {code:'warn', badge:'warn', text:'PERLU PERHATIAN'};
-  return {code:'ok', badge:'good', text:'NORMAL'};
+  const t=last.temp, ph=last.ph, d=last.do;
+  if(t < 24 || t > 33 || ph < 6.2 || ph > 8.5 || d < 4) return {badge:'danger', text:'BAHAYA'};
+  if(t < 25 || t > 31 || ph < 6.5 || ph > 8.0 || d < 5) return {badge:'warn', text:'PERLU PERHATIAN'};
+  return {badge:'good', text:'NORMAL'};
 }
 function updateOverallBadge(){
   const p = ponds[curPond];
   const st = getStatusFor(p);
   const el = document.getElementById('overallBadge');
-  el.className = 'badge ' + st.badge;
+  if(st.badge==='good'){ el.style.background='rgba(34,197,94,0.12)'; el.style.color='#86efac'; }
+  else if(st.badge==='warn'){ el.style.background='rgba(255,185,0,0.08)'; el.style.color='#ffd58a'; }
+  else { el.style.background='rgba(255,80,80,0.06)'; el.style.color='#ff9aa2'; }
   el.textContent = st.text;
 }
 
 /* =========================
-   Chart: init & draw
+   Chart
    ========================= */
 function initChart(){
   const ctx = document.getElementById('chartMain').getContext('2d');
-  chart = new Chart(ctx,{
+  chart = new Chart(ctx, {
     type:'line',
-    data:{labels:[], datasets:[
+    data:{ labels:[], datasets:[
       {label:'Suhu (°C)', data:[], borderColor:'#00d4ff', tension:0.25, yAxisID:'y'},
       {label:'pH', data:[], borderColor:'#ff7b7b', tension:0.25, yAxisID:'y2'}
     ]},
@@ -404,7 +494,6 @@ function initChart(){
     }
   });
 }
-
 function drawChart(){
   if(!chart) initChart();
   const p = ponds[curPond];
@@ -419,47 +508,54 @@ function drawChart(){
 }
 
 /* =========================
-   Logging (table)
+   Logging table
    ========================= */
 function appendLogRow(entry){
   const tbody = document.querySelector('#logTable tbody');
-  const row = document.createElement('tr');
-  row.innerHTML = `<td>${entry.time}</td><td>${ponds[entry.pond].name}</td><td>${entry.temp.toFixed(2)}</td>
-                   <td>${entry.ph.toFixed(2)}</td><td>${entry.do.toFixed(2)}</td><td>${entry.turb.toFixed(1)}</td>`;
-  tbody.insertBefore(row, tbody.firstChild);
-  // keep max rows
-  while(tbody.children.length > 200) tbody.removeChild(tbody.lastChild);
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${entry.time}</td><td>${ponds[entry.pond].name}</td><td>${entry.temp.toFixed(2)}</td>
+                  <td>${entry.ph.toFixed(2)}</td><td>${entry.do.toFixed(2)}</td><td>${entry.turb.toFixed(1)}</td>`;
+  tbody.insertBefore(tr, tbody.firstChild);
+  while(tbody.children.length > 300) tbody.removeChild(tbody.lastChild);
 }
 
 /* =========================
-   Simulate or fetch new data
+   Simulate & fetch new data
    ========================= */
+function speciesBaseline(species){
+  if(species==='Lele') return {nominalTemp:29.0, nominalPH:7.1, nominalDO:6.0, nominalTurb:30, nominalLevel:60};
+  if(species==='Nila') return {nominalTemp:28.0, nominalPH:6.8, nominalDO:5.8, nominalTurb:40, nominalLevel:55};
+  if(species==='Gurame') return {nominalTemp:29.5, nominalPH:7.3, nominalDO:6.5, nominalTurb:25, nominalLevel:72};
+  return {nominalTemp:28, nominalPH:7.0, nominalDO:6.0, nominalTurb:30, nominalLevel:60};
+}
 function makeReading(base){
-  // base: object containing nominal values
   return {
     time: nowStr(),
     pond: base.id,
-    temp: +(base.nominalTemp + (Math.random()-0.5)*1.8),
-    ph: +(base.nominalPH + (Math.random()-0.5)*0.12),
-    do: +(base.nominalDO + (Math.random()-0.5)*0.4),
-    turb: +(base.nominalTurb + (Math.random()-0.5)*3)
+    temp: +(base.nominalTemp + (Math.random()-0.5)*1.8).toFixed(2),
+    ph: +(base.nominalPH + (Math.random()-0.5)*0.12).toFixed(2),
+    do: +(base.nominalDO + (Math.random()-0.5)*0.4).toFixed(2),
+    turb: +(base.nominalTurb + (Math.random()-0.5)*3).toFixed(1),
+    level: Math.max(10, Math.min(100, +(base.nominalLevel + (Math.random()-0.5)*3).toFixed(1)))
   };
 }
 
+/* step generator: add new reading for each pond */
 function stepGenerate(){
-  // for each pond create a new reading and push to history
   POND_IDS.forEach(id=>{
     const p = ponds[id];
-    // baseline values depend on species (coarse)
     const nominal = speciesBaseline(p.species);
     const r = makeReading(Object.assign({id:id}, nominal));
+    // push reading
     p.history.push(r);
-    // cap history
+    // update visual snapshot
+    p.visual = { level: r.level, turb: r.turb, temp: r.temp, ph: r.ph, do: r.do };
     if(p.history.length > 500) p.history.shift();
     saveState();
-    // if current pond, render
-    if(id===curPond){
-      setValueDisplays(r);
+    // if current pond, render onto UI
+    if(id === curPond){
+      updateValueCards(r);
+      updateVisual(p.visual);
       appendLogRow(r);
       drawChart();
       updateOverallBadge();
@@ -468,97 +564,96 @@ function stepGenerate(){
   document.getElementById('lastSync').textContent = nowStr();
 }
 
-/* baseline depending on species */
-function speciesBaseline(species){
-  if(species==='Lele') return {nominalTemp:29.0, nominalPH:7.1, nominalDO:6.0, nominalTurb:30};
-  if(species==='Nila') return {nominalTemp:28.0, nominalPH:6.8, nominalDO:5.8, nominalTurb:40};
-  if(species==='Gurame') return {nominalTemp:29.5, nominalPH:7.3, nominalDO:6.5, nominalTurb:25};
-  return {nominalTemp:28, nominalPH:7.0, nominalDO:6.0, nominalTurb:30};
-}
-
 /* =========================
-   Controls & Events
+   Controls (pump/aerator)
    ========================= */
 document.getElementById('btnPump').addEventListener('click', ()=>{
   const p = ponds[curPond];
-  p.pump = !p.pump;
-  saveState();
-  renderPond();
+  p.controls.pump = !p.controls.pump; saveState(); renderPond();
+  // send mock control to device (replace with real API)
+  sendControlToDevice(curPond, {pump: p.controls.pump, aerator: p.controls.aerator});
 });
 document.getElementById('btnAer').addEventListener('click', ()=>{
   const p = ponds[curPond];
-  p.aerator = !p.aerator;
-  saveState();
-  renderPond();
+  p.controls.aerator = !p.controls.aerator; saveState(); renderPond();
+  sendControlToDevice(curPond, {pump: p.controls.pump, aerator: p.controls.aerator});
 });
-document.getElementById('exportCsv').addEventListener('click', ()=>{
-  exportCSV();
-});
-document.getElementById('toggleSim').addEventListener('click', (e)=>{
-  simMode = !simMode;
-  e.target.textContent = 'SIM: ' + (simMode ? 'ON' : 'OFF');
-  document.getElementById('modeLabel').textContent = simMode ? 'Simulation' : 'API (offline)';
-});
-document.getElementById('btnReset').addEventListener('click', ()=>{
-  if(confirm('Reset semua data history untuk semua tambak?')) {
-    POND_IDS.forEach(id=>{ ponds[id].history = []; });
-    saveState(); document.querySelector('#logTable tbody').innerHTML=''; drawChart(); renderPond();
-  }
-});
-document.getElementById('windowSel').addEventListener('change', (e)=>{
-  maxWindow = parseInt(e.target.value); drawChart();
-});
-document.getElementById('btnReset'); // noop for lint
 
-/* =========================
-   CSV Export
-   ========================= */
+/* mock function to send control to device (API-ready) */
+function sendControlToDevice(pondId, controls){
+  // This is a mock — replace URL with your backend API endpoint, e.g.:
+  // fetch('https://your-backend.example.com/api/control', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({pond_id:pondId, controls})})
+  console.log('Mock send control', pondId, controls);
+  // simulated response
+  setTimeout(()=>{ console.log('Device ACK (mock)'); }, 600);
+}
+
+/* Export CSV */
+document.getElementById('exportCsv').addEventListener('click', exportCSV);
 function exportCSV(){
-  // gather all history rows
-  let rows = [['time','pond_id','pond_name','temp','ph','do','turbidity']];
+  const rows=[['time','pond_id','pond_name','temp','ph','do','turbidity','level']];
   POND_IDS.forEach(id=>{
     ponds[id].history.forEach(h=>{
-      rows.push([h.time, id, ponds[id].name, h.temp.toFixed(2), h.ph.toFixed(2), h.do.toFixed(2), h.turb.toFixed(1)]);
+      rows.push([h.time,id,ponds[id].name,h.temp.toFixed(2),h.ph.toFixed(2),h.do.toFixed(2),h.turb.toFixed(1), (h.level||'')]);
     });
   });
-  const csv = rows.map(r => r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'sfp_export_'+(new Date().toISOString().slice(0,10))+'.csv'; a.click();
+  const a = document.createElement('a'); a.href=url; a.download = 'sfp_export_'+(new Date().toISOString().slice(0,10))+'.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 
+/* Toggle simulation */
+document.getElementById('toggleSim').addEventListener('click', (e)=>{
+  simMode = !simMode; e.target.textContent = 'SIM: ' + (simMode ? 'ON' : 'OFF'); document.getElementById('modeLabel').textContent = simMode ? 'Simulation' : 'API (manual)';
+});
+
+/* Reset data */
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(confirm('Reset semua data history untuk semua tambak?')){
+    POND_IDS.forEach(id=>{ ponds[id].history = []; ponds[id].visual = Object.assign({}, DEFAULT_PONDS[id].visual); });
+    document.querySelector('#logTable tbody').innerHTML=''; saveState(); renderPond();
+  }
+});
+
+/* window selection */
+document.getElementById('windowSel').addEventListener('change', (e)=>{ maxWindow = parseInt(e.target.value); drawChart(); });
+
 /* =========================
-   Startup / App init
+   Startup
    ========================= */
 function initApp(){
   loadState();
   populatePondSelect();
-  // if no history, prefill few points so charts not empty
+  // ensure some baseline history exists
   POND_IDS.forEach(id=>{
-    if(ponds[id].history.length < 3){
-      for(let i=0;i<8;i++){
+    if(ponds[id].history.length < 6){
+      for(let i=0;i<10;i++){
         const baseline = speciesBaseline(ponds[id].species);
         const r = makeReading(Object.assign({id:id}, baseline));
         ponds[id].history.push(r);
+        ponds[id].visual = { level: r.level, turb: r.turb, temp: r.temp, ph: r.ph, do: r.do };
       }
     }
   });
   saveState();
-  // set user UI
+  // UI init
   const u = localStorage.getItem('sfp_user') || 'zaenal';
   setUserUI(u);
-
-  // attach header logout
   document.getElementById('logoutBtn').onclick = doLogout;
-
-  // initial render
   renderPond();
 
-  // auto update loop
-  setInterval(()=>{
-    if(simMode) stepGenerate();
-  }, updateInterval);
+  // auto update loop (simulation or real fetch)
+  setInterval(()=>{ if(simMode) stepGenerate(); else fetchFromAPI(); }, updateInterval);
+}
+
+/* fetchFromAPI placeholder: integrate real backend here */
+function fetchFromAPI(){
+  // Replace with e.g. fetch('https://api.yoursystem/sensor/latest') and update ponds[...] accordingly
+  // Example:
+  // fetch('https://api.example.com/latest').then(r=>r.json()).then(data => { /* parse and push to ponds */ });
+  console.log('fetchFromAPI: not implemented (simMode=false)');
 }
 
 /* auto-login check */
@@ -567,7 +662,6 @@ window.addEventListener('load', ()=>{
   if(u && u.length>0){
     document.getElementById('loginModal').style.display = 'none';
     setUserUI(u);
-    loadState();
     initApp();
   } else {
     document.getElementById('loginModal').style.display = 'flex';
