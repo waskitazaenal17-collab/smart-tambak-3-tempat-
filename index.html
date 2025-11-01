@@ -72,10 +72,11 @@ nav{width:300px;min-width:240px}
 .section-title{font-size:0.85rem;color:var(--muted);margin-bottom:8px}
 .small{font-size:0.82rem;color:var(--muted)}
 
-/* Indikator Otomasi */
+/* (REVISI) Indikator Otomasi */
 .auto-status-grid { 
-  display:flex; 
-  gap:12px; 
+  display: grid; /* Gunakan grid */
+  grid-template-columns: 1fr 1fr; /* 2 kolom */
+  gap: 8px; 
   margin-bottom:12px; 
   background:rgba(0,0,0,0.2); 
   padding:8px; 
@@ -96,6 +97,9 @@ nav{width:300px;min-width:240px}
 .indicator-light.active {
   background:var(--indicator-on);
   box-shadow: 0 0 10px var(--indicator-on);
+}
+.auto-status.full-width { /* (BARU) Untuk item ganjil */
+  grid-column: 1 / -1; /* Ambil 1 baris penuh */
 }
 
 /* controls */
@@ -259,11 +263,31 @@ th{color:var(--muted);font-weight:600}
       <div class="auto-status-grid">
         <div class="auto-status">
           <div id="autoIndicatorPump" class="indicator-light"></div>
-          <span>Pompa</span>
+          <span>Pompa Isi</span>
         </div>
         <div class="auto-status">
           <div id="autoIndicatorAerator" class="indicator-light"></div>
           <span>Aerator</span>
+        </div>
+        <div class="auto-status">
+          <div id="autoIndicatorHeater" class="indicator-light"></div>
+          <span>Heater</span>
+        </div>
+        <div class="auto-status">
+          <div id="autoIndicatorChiller" class="indicator-light"></div>
+          <span>Chiller</span>
+        </div>
+        <div class="auto-status">
+          <div id="autoIndicatorPhUp" class="indicator-light"></div>
+          <span>pH Up</span>
+        </div>
+        <div class="auto-status">
+          <div id="autoIndicatorPhDown" class="indicator-light"></div>
+          <span>pH Down</span>
+        </div>
+        <div class="auto-status full-width">
+          <div id="autoIndicatorFilter" class="indicator-light"></div>
+          <span>Pompa Filter</span>
         </div>
       </div>
 
@@ -351,7 +375,7 @@ th{color:var(--muted);font-weight:600}
             <div class="card"><h3>🌡️ Suhu</h3><div class="bigval" id="valTemp">-- °C</div><div class="small">Ideal: 24–32 °C</div></div>
             <div class="card"><h3>⚗️ pH</h3><div class="bigval" id="valPH">--</div><div class="small">Ideal: 6.5–8.0</div></div>
             <div class="card"><h3>🫧 DO</h3><div class="bigval" id="valDO">-- mg/L</div><div class="small">Ideal: ≥5 mg/L</div></div>
-            <div class="card"><h3>🌫️ Kekeruhan</h3><div class="bigval" id="valTurb">-- NTU</div><div class="small">Lower is better</div></div>
+            <div class="card"><h3>🌫️ Kekeruhan</h3><div class="bigval" id="valTurb">-- NTU</div><div class="small">Ideal: &lt; 40 NTU</div></div>
           </div>
 
           <div class="chart-area">
@@ -379,7 +403,7 @@ th{color:var(--muted);font-weight:600}
 const updateIntervalDefault = 3000;
 let simMode = true;
 let paused = false;
-let automationActive = false; // Status Otomasi
+let automationActive = false;
 
 const storageKey = 'sfp_onepond_v2';
 const controlsKey = 'sfp_onepond_controls_v2';
@@ -389,7 +413,16 @@ const defaultState = {
   history: []
 };
 let state = {};
-let controls = { pump:false, aerator:false }; 
+// (BARU) 7 Aktuator, default OFF
+let controls = { 
+  pump:false, 
+  aerator:false,
+  heater: false,
+  chiller: false,
+  phUp: false,
+  phDown: false,
+  filter: false
+}; 
 let chart = null;
 let windowSize = 20;
 
@@ -399,7 +432,7 @@ let windowSize = 20;
 function saveState(){ localStorage.setItem(storageKey, JSON.stringify(state)); }
 function loadState(){ const v = localStorage.getItem(storageKey); if(v) state = JSON.parse(v); else { state = JSON.parse(JSON.stringify(defaultState)); seedInitial(); saveState(); } }
 function saveControls(){ localStorage.setItem(controlsKey, JSON.stringify(controls)); }
-function loadControls(){ const v = localStorage.getItem(controlsKey); if(v) controls = JSON.parse(v); else { controls = {pump:false,aerator:false}; saveControls(); } }
+function loadControls(){ const v = localStorage.getItem(controlsKey); if(v) controls = JSON.parse(v); else { controls = { pump:false, aerator:false, heater:false, chiller:false, phUp:false, phDown:false, filter:false }; saveControls(); } }
 function nowStr(){ return new Date().toLocaleString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
 
 /* =========================
@@ -421,11 +454,16 @@ function setupEventListeners() {
       document.getElementById('controlModeLabel').textContent = 'Mode: Manual';
       document.getElementById('btnPump').classList.remove('disabled');
       document.getElementById('btnAer').classList.remove('disabled');
-      document.getElementById('autoIndicatorPump').classList.remove('active');
-      document.getElementById('autoIndicatorAerator').classList.remove('active');
+      // Matikan semua lampu indikator saat otomasi OFF
+      Object.keys(controls).forEach(key => {
+        const indicatorId = `autoIndicator${key.charAt(0).toUpperCase() + key.slice(1)}`;
+        const el = document.getElementById(indicatorId);
+        if (el) el.classList.remove('active');
+      });
     }
   });
 
+  // Tombol Manual
   document.getElementById('btnPump').addEventListener('click', (e)=>{
     if(automationActive) { alert('Matikan mode Otomasi untuk kontrol manual!'); return; }
     controls.pump = !controls.pump; 
@@ -439,6 +477,7 @@ function setupEventListeners() {
     saveControls();
   });
   
+  // Tombol Utility
   document.getElementById('exportCsv').addEventListener('click', exportCSV);
   document.getElementById('resetData').addEventListener('click', ()=>{
     if(confirm('Reset semua history data?')){ state.history = []; document.querySelector('#logTable tbody').innerHTML=''; drawChart(); saveState(); }
@@ -460,21 +499,37 @@ function setupEventListeners() {
   Visual update logic
   ======================================= */
 function applyControlsUI(){
-  const p = document.getElementById('btnPump'); const a = document.getElementById('btnAer');
+  // Update Tombol Manual
+  const p = document.getElementById('btnPump'); 
+  const a = document.getElementById('btnAer');
   p.textContent = 'Pompa: ' + (controls.pump ? 'ON' : 'OFF'); 
   p.style.background = controls.pump ? '#12e5a1' : '#ff6b6b';
   a.textContent = 'Aerator: ' + (controls.aerator ? 'ON' : 'OFF'); 
   a.style.background = controls.aerator ? '#12e5a1' : '#ff6b6b';
   
+  // Update Indikator Otomasi (HANYA jika mode Otomasi ON)
   if(automationActive) {
-    document.getElementById('autoIndicatorPump').classList.toggle('active', controls.pump);
-    document.getElementById('autoIndicatorAerator').classList.toggle('active', controls.aerator);
+    // Mapping nama 'controls' ke ID Indikator
+    const indicatorMap = {
+      pump: 'autoIndicatorPump',
+      aerator: 'autoIndicatorAerator',
+      heater: 'autoIndicatorHeater',
+      chiller: 'autoIndicatorChiller',
+      phUp: 'autoIndicatorPhUp',
+      phDown: 'autoIndicatorPhDown',
+      filter: 'autoIndicatorFilter'
+    };
+    
+    Object.keys(indicatorMap).forEach(key => {
+      document.getElementById(indicatorMap[key]).classList.toggle('active', controls[key]);
+    });
   }
 }
 function updateVisualsFromReading(reading){
   const vis = { ...reading };
   state.visual = vis;
   
+  // Update Teks
   const levelPct = Math.max(0, Math.min(100, vis.level));
   document.getElementById('waterBox').style.height = (levelPct) + '%';
   document.getElementById('visLevel').textContent = levelPct.toFixed(0) + '%';
@@ -483,6 +538,7 @@ function updateVisualsFromReading(reading){
   document.getElementById('visPH').textContent = vis.ph.toFixed(2);
   document.getElementById('visDO').textContent = vis.do.toFixed(2) + ' mg/L';
 
+  // Visual Gradien Suhu & Warna Kekeruhan
   let turbColor;
   if(vis.turb <= 25) turbColor = {r:4,g:120,b:255};
   else if(vis.turb <= 50) turbColor = {r:20,g:180,b:140};
@@ -500,8 +556,10 @@ function updateVisualsFromReading(reading){
   document.getElementById('waterBox').style.background = `linear-gradient(180deg, ${topColor} 20%, ${bottomColor} 100%)`;
   document.getElementById('surfaceHeat').style.background = `linear-gradient(180deg, rgba(255,${Math.round(200*tempFactor)},${Math.round(80*tempFactor)},${0.12*tempFactor}), rgba(255,255,255,0))`;
 
+  // Visual Partikel Kekeruhan
   generateParticles(vis.turb);
 
+  // Visual Bar pH
   const phBar = document.getElementById('phBar');
   let phColor = 'var(--ph-good)';
   if (vis.ph < 6.5) phColor = 'var(--ph-acid)';
@@ -511,6 +569,7 @@ function updateVisualsFromReading(reading){
   phBar.style.height = phHeight + '%';
   phBar.style.backgroundColor = phColor;
   
+  // Visual Gelembung DO
   generateBubbles(vis.do, vis.ph);
 }
 
@@ -555,7 +614,7 @@ function generateBubbles(doVal, phVal){
 }
 
 /* =========================
-  Chart & Logging (VERSI LENGKAP)
+  Chart & Logging
   ========================= */
 function initChart(){
   const ctx = document.getElementById('chartMain').getContext('2d');
@@ -604,22 +663,40 @@ function appendLogRow(r){
 
 
 /* =======================================
-  Otomasi & Simulasi Data
+  (REVISI) Otomasi & Simulasi Data
   ======================================= */
+
+/* (BARU) Fungsi Logika Otomasi (7 Sistem) */
 function runAutomationLogic(current) {
-  if (!automationActive) {
-    return;
-  }
-  if (current.do < 5.0) {
-    controls.aerator = true;
-  } else if (current.do > 6.5) {
-    controls.aerator = false;
-  }
-  if (current.level < 80.0) {
-    controls.pump = true;
-  } else if (current.level > 95.0) {
-    controls.pump = false;
-  }
+  if (!automationActive) return;
+
+  // 1. Level Air
+  if (current.level < 80.0) { controls.pump = true; } 
+  else if (current.level > 95.0) { controls.pump = false; }
+  
+  // 2. Oksigen (DO)
+  if (current.do < 5.0) { controls.aerator = true; } 
+  else if (current.do > 6.5) { controls.aerator = false; }
+  
+  // 3. Suhu
+  if (current.temp < 25.0) { controls.heater = true; } 
+  else if (current.temp > 27.0) { controls.heater = false; } // Matikan heater
+  
+  if (current.temp > 31.0) { controls.chiller = true; } 
+  else if (current.temp < 29.0) { controls.chiller = false; } // Matikan chiller
+  
+  // 4. pH
+  if (current.ph < 6.5) { controls.phUp = true; } 
+  else if (current.ph > 6.8) { controls.phUp = false; }
+  
+  if (current.ph > 8.0) { controls.phDown = true; } 
+  else if (current.ph < 7.7) { controls.phDown = false; }
+  
+  // 5. (BARU) Kekeruhan
+  if (current.turb > 40.0) { controls.filter = true; } 
+  else if (current.turb < 20.0) { controls.filter = false; }
+
+  // Update semua UI Indikator & Tombol
   applyControlsUI();
 }
 
@@ -631,33 +708,56 @@ function seedInitial(){
   }
 }
 
+/* (REVISI) Fungsi Pembuat Data (7 Sistem) */
 function makeReading(base, isSeeding = false){
   let level = base.nominalLevel;
   let doV = base.nominalDO;
+  let temp = base.nominalTemp;
+  let ph = base.nominalPH;
+  let turb = base.nominalTurb;
   
   if (!isSeeding) {
-    if (controls.pump) { level += 5.0; } 
-    else { level -= 0.5; }
+    // Terapkan tren berdasarkan kontrol
+    if (controls.pump) { level += 5.0; } else { level -= 0.2; } // Evaporasi
+    if (controls.aerator) { doV += 0.5; } else { doV -= 0.2; } // Konsumsi O2
     
-    if (controls.aerator) { doV += 0.5; } 
-    else { doV -= 0.2; }
+    // (BARU) Kontrol Suhu
+    if (controls.heater) { temp += 0.5; }
+    if (controls.chiller) { temp -= 0.5; }
+    
+    // (BARU) Kontrol pH
+    if (controls.phUp) { ph += 0.2; }
+    if (controls.phDown) { ph -= 0.2; }
+    
+    // (BARU) Kontrol Kekeruhan
+    if (controls.filter) { turb -= 5.0; } 
+    else { turb += 0.5; } // Alami jadi keruh
+    
+    // Gangguan Acak (biar tidak stabil)
+    if (Math.random() < 0.1) temp += (Math.random() - 0.5) * 2; // Cuaca
+    if (Math.random() < 0.1) ph += (Math.random() - 0.5) * 0.5; // Hujan?
   }
 
-  const temp = +(base.nominalTemp + (Math.random()-0.5)*0.5).toFixed(2);
-  const ph = +(base.nominalPH + (Math.random()-0.5)*0.1).toFixed(2);
-  const turb = Math.max(5, +(base.nominalTurb + (Math.random()-0.5)*3).toFixed(1));
+  // Tambahkan Fluktuasi Acak (Noise)
+  const finalTemp = +(temp + (Math.random()-0.5)*0.2).toFixed(2);
+  const finalPh = +(ph + (Math.random()-0.5)*0.05).toFixed(2);
+  const finalTurb = Math.max(5, +(turb + (Math.random()-0.5)*1).toFixed(1));
   const finalLevel = Math.max(0, Math.min(100, +(level + (Math.random()-0.5)*1).toFixed(1)));
   const finalDO = Math.max(0, Math.min(10, +(doV + (Math.random()-0.5)*0.1).toFixed(2)));
   
-  return { time: nowStr(), temp, ph, do: finalDO, turb, level: finalLevel };
+  return { time: nowStr(), temp: finalTemp, ph: finalPh, do: finalDO, turb: finalTurb, level: finalLevel };
 }
 
+/* (REVISI) Fungsi Siklus Utama */
 function step(){
   if(paused) return;
 
   const last = state.visual;
+  
+  // 1. Jalankan Otomasi (memutuskan 'controls')
   runAutomationLogic(last);
   
+  // 2. Buat Data Baru (berdasarkan 'controls')
   const base = {
     nominalTemp: last.temp,
     nominalPH: last.ph,
@@ -670,6 +770,7 @@ function step(){
   state.history.push(r);
   if(state.history.length > 500) state.history.shift();
   
+  // 3. Update UI
   updateVisualsFromReading(r);
   updateValueCards(r);
   appendLogRow(r);
@@ -677,12 +778,13 @@ function step(){
   updateOverallBadge();
   document.getElementById('lastSync').textContent = nowStr();
   
+  // 4. Simpan status
   saveState();
   saveControls();
 }
 
 /* =========================
-  Value cards & status (VERSI LENGKAP)
+  Value cards & status
   ========================= */
 function updateValueCards(latest){
   document.getElementById('valTemp').textContent = latest.temp.toFixed(2) + ' °C';
@@ -692,9 +794,10 @@ function updateValueCards(latest){
 }
 
 function getStatus(latest){
-  const t = latest.temp, ph = latest.ph, d = latest.do;
-  if(t<24 || t>33 || ph<6.2 || ph>8.5 || d<4) return {level:'danger',text:'BAHAYA'};
-  if(t<25 || t>31 || ph<6.5 || ph>8.0 || d<5) return {level:'warn',text:'PERLU PERHATIAN'};
+  const t = latest.temp, ph = latest.ph, d = latest.do, turb = latest.turb;
+  // (BARU) Tambahkan kekeruhan ke status
+  if(t<24 || t>33 || ph<6.2 || ph>8.5 || d<4 || turb > 60) return {level:'danger',text:'BAHAYA'};
+  if(t<25 || t>31 || ph<6.5 || ph>8.0 || d<5 || turb > 40) return {level:'warn',text:'PERLU PERHATIAN'};
   return {level:'ok',text:'NORMAL'};
 }
 
@@ -717,7 +820,7 @@ function sendControlMock(){
 }
 
 /* =========================
-  CSV Export (VERSI LENGKAP)
+  CSV Export
   ========================= */
 function exportCSV(){
   const rows=[['time','temp','ph','do','turbidity','level']];
@@ -766,7 +869,7 @@ function startApp(){
   LOGIN SCRIPT
   ========================= */
 window.addEventListener('load', () => {
-  const KATA_SANDI = "tambakzaenal";
+  const KATA_SANDI = "tambak123";
   const loginScreen = document.getElementById('loginScreen');
   const appScreen = document.getElementById('app');
   const passInput = document.getElementById('passInput');
