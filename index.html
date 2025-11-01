@@ -1,207 +1,245 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Fish Pond Monitoring</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* ======== GLOBAL STYLE ======== */
-        body {
-            font-family: "Poppins", sans-serif;
-            background: #f2f5f9;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Fish Pond Dashboard PRO</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* === STYLE DASAR === */
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f4f7fa;
+      margin: 0;
+      color: #333;
+    }
+    header {
+      background: linear-gradient(135deg, #0077b6, #00b4d8);
+      color: white;
+      text-align: center;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    header h1 { margin: 0; font-size: 1.8em; }
+    header p { margin: 5px 0 0; font-weight: 300; }
 
-        header {
-            background: linear-gradient(135deg, #0077b6, #00b4d8);
-            color: white;
-            text-align: center;
-            padding: 30px 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
+    main {
+      padding: 20px;
+      max-width: 1100px;
+      margin: auto;
+    }
 
-        header h1 {
-            margin: 0;
-            font-size: 1.8em;
-        }
+    /* === KARTU STATUS === */
+    .status-section {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin-bottom: 25px;
+    }
+    .card {
+      background: white;
+      width: 170px;
+      margin: 10px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      padding: 15px;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+    .card:hover { transform: scale(1.05); }
+    .card h2 { color: #0077b6; font-size: 1em; margin: 5px 0; }
+    .card p { font-size: 1.6em; margin: 5px 0; font-weight: bold; }
 
-        header p {
-            margin-top: 5px;
-            font-weight: 300;
-            font-size: 0.95em;
-        }
+    /* === GRAFIK === */
+    .chart-container {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      margin-bottom: 25px;
+    }
 
-        main {
-            padding: 20px;
-            max-width: 900px;
-            margin: auto;
-        }
+    /* === KONTROL PERANGKAT === */
+    .control-section {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      margin-bottom: 25px;
+    }
+    .control-section h3 {
+      color: #0077b6;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+    .control-btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 1em;
+      color: white;
+      background: #00b4d8;
+      margin: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .control-btn.off { background: #ef233c; }
+    .control-btn:hover { opacity: 0.8; }
 
-        /* ======== CARD DATA ======== */
-        .data-display {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
-        }
+    /* === STATUS ALERT === */
+    .alert {
+      text-align: center;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+    .alert.safe { background: #c8e6c9; color: #2e7d32; }
+    .alert.warning { background: #fff3cd; color: #856404; }
+    .alert.danger { background: #f8d7da; color: #721c24; }
 
-        .card {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            text-align: center;
-            width: 160px;
-            transition: transform 0.3s ease;
-        }
+    /* === FOOTER === */
+    footer {
+      background: #0077b6;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.9em;
+    }
 
-        .card:hover {
-            transform: scale(1.05);
-        }
-
-        .card h2 {
-            color: #0077b6;
-            margin-bottom: 10px;
-        }
-
-        .card p {
-            font-size: 1.8em;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        /* ======== CHART SECTION ======== */
-        .chart-section {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        }
-
-        /* ======== FOOTER ======== */
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 15px;
-            background: #0077b6;
-            color: white;
-            font-size: 0.9em;
-        }
-
-        @media(max-width: 600px) {
-            .card {
-                width: 45%;
-                margin-bottom: 15px;
-            }
-        }
-    </style>
+    @media(max-width:600px){
+      .card { width: 45%; }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>🌊 Smart Fish Pond Monitoring</h1>
-        <p>Monitoring Suhu & pH Air Tambak Secara Real-Time</p>
-    </header>
+  <header>
+    <h1>🐟 Smart Fish Pond Dashboard PRO</h1>
+    <p>Real-Time Monitoring & Control System</p>
+  </header>
 
-    <main>
-        <!-- ====== DATA DISPLAY ====== -->
-        <section class="data-display">
-            <div class="card">
-                <h2>Suhu</h2>
-                <p id="temp-value">-- °C</p>
-            </div>
-            <div class="card">
-                <h2>pH Air</h2>
-                <p id="ph-value">--</p>
-            </div>
-        </section>
+  <main>
+    <!-- ALERT STATUS -->
+    <div id="statusAlert" class="alert safe">Kondisi Tambak: Normal</div>
 
-        <!-- ====== GRAFIK ====== -->
-        <section class="chart-section">
-            <canvas id="sensorChart"></canvas>
-        </section>
-    </main>
+    <!-- DATA SENSOR -->
+    <section class="status-section">
+      <div class="card"><h2>Suhu</h2><p id="temp">-- °C</p></div>
+      <div class="card"><h2>pH Air</h2><p id="ph">--</p></div>
+      <div class="card"><h2>Oksigen (DO)</h2><p id="do">-- mg/L</p></div>
+      <div class="card"><h2>Kekeruhan</h2><p id="turbidity">-- NTU</p></div>
+      <div class="card"><h2>Level Air</h2><p id="level">-- cm</p></div>
+    </section>
 
-    <footer>
-        <p>© 2025 Smart IoT System | by Waskita</p>
-    </footer>
+    <!-- GRAFIK -->
+    <section class="chart-container">
+      <canvas id="chartSensor"></canvas>
+    </section>
 
-    <script>
-        // ====== AMBIL ELEMEN ======
-        const tempDisplay = document.getElementById("temp-value");
-        const phDisplay = document.getElementById("ph-value");
-        const ctx = document.getElementById("sensorChart").getContext("2d");
+    <!-- KONTROL OTOMATIS -->
+    <section class="control-section">
+      <h3>Kontrol Perangkat</h3>
+      <div class="controls">
+        <button class="control-btn" id="pump">Pompa Air</button>
+        <button class="control-btn" id="aerator">Aerator</button>
+        <button class="control-btn" id="valve">Katup Air</button>
+      </div>
+    </section>
+  </main>
 
-        // ====== INISIALISASI CHART ======
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Suhu (°C)',
-                        borderColor: '#0077b6',
-                        data: [],
-                        fill: false,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'pH Air',
-                        borderColor: '#ff6b6b',
-                        data: [],
-                        fill: false,
-                        tension: 0.3
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                animation: false,
-                scales: {
-                    x: {
-                        title: { display: true, text: 'Waktu', color: '#555' },
-                        ticks: { color: '#555' }
-                    },
-                    y: {
-                        title: { display: true, text: 'Nilai', color: '#555' },
-                        ticks: { color: '#555' }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: '#333' }
-                    }
-                }
-            }
-        });
+  <footer>© 2025 Smart IoT System | Developed by Waskita</footer>
 
-        // ====== SIMULASI DATA REAL-TIME ======
-        function generateFakeData() {
-            const temp = (25 + Math.random() * 5).toFixed(2);
-            const ph = (6 + Math.random() * 2).toFixed(2);
-            const time = new Date().toLocaleTimeString();
+  <script>
+    // ======= SIMULASI DATA SENSOR =======
+    const dataSensor = { temp: 0, ph: 0, do: 0, turbidity: 0, level: 0 };
+    const chartCtx = document.getElementById('chartSensor').getContext('2d');
+    const chart = new Chart(chartCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          { label: 'Suhu (°C)', borderColor: '#0077b6', data: [], fill: false },
+          { label: 'pH', borderColor: '#ff6b6b', data: [], fill: false },
+          { label: 'DO (mg/L)', borderColor: '#00b894', data: [], fill: false }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { title: { display: true, text: 'Waktu' } },
+          y: { title: { display: true, text: 'Nilai' } }
+        },
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
 
-            tempDisplay.textContent = `${temp} °C`;
-            phDisplay.textContent = ph;
+    function generateData() {
+      dataSensor.temp = (25 + Math.random() * 5).toFixed(2);
+      dataSensor.ph = (6 + Math.random() * 2).toFixed(2);
+      dataSensor.do = (5 + Math.random() * 2).toFixed(2);
+      dataSensor.turbidity = (10 + Math.random() * 20).toFixed(1);
+      dataSensor.level = (80 + Math.random() * 10).toFixed(1);
 
-            chart.data.labels.push(time);
-            chart.data.datasets[0].data.push(temp);
-            chart.data.datasets[1].data.push(ph);
+      document.getElementById('temp').textContent = dataSensor.temp + " °C";
+      document.getElementById('ph').textContent = dataSensor.ph;
+      document.getElementById('do').textContent = dataSensor.do + " mg/L";
+      document.getElementById('turbidity').textContent = dataSensor.turbidity + " NTU";
+      document.getElementById('level').textContent = dataSensor.level + " cm";
 
-            if (chart.data.labels.length > 10) {
-                chart.data.labels.shift();
-                chart.data.datasets[0].data.shift();
-                chart.data.datasets[1].data.shift();
-            }
+      updateChart();
+      checkAlert();
+    }
 
-            chart.update();
-        }
+    function updateChart() {
+      const now = new Date().toLocaleTimeString();
+      chart.data.labels.push(now);
+      chart.data.datasets[0].data.push(dataSensor.temp);
+      chart.data.datasets[1].data.push(dataSensor.ph);
+      chart.data.datasets[2].data.push(dataSensor.do);
 
-        // Jalankan update setiap 2 detik
-        setInterval(generateFakeData, 2000);
-    </script>
+      if(chart.data.labels.length > 10){
+        chart.data.labels.shift();
+        chart.data.datasets.forEach(d => d.data.shift());
+      }
+      chart.update();
+    }
+
+    function checkAlert() {
+      const alertBox = document.getElementById('statusAlert');
+      const t = parseFloat(dataSensor.temp);
+      const p = parseFloat(dataSensor.ph);
+      const d = parseFloat(dataSensor.do);
+
+      if (t < 25 || p < 6.5 || p > 8.0 || d < 5) {
+        alertBox.className = 'alert danger';
+        alertBox.textContent = "⚠️ Kondisi Bahaya! Periksa Kualitas Air!";
+      } else if (t > 28 || p > 7.8) {
+        alertBox.className = 'alert warning';
+        alertBox.textContent = "⚠️ Perlu Perhatian: Kualitas Air Tidak Stabil";
+      } else {
+        alertBox.className = 'alert safe';
+        alertBox.textContent = "✅ Kondisi Tambak: Normal";
+      }
+    }
+
+    setInterval(generateData, 2000);
+
+    // ======= KONTROL PERANGKAT =======
+    const buttons = document.querySelectorAll('.control-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('off');
+        btn.textContent = btn.classList.contains('off')
+          ? btn.textContent + " OFF"
+          : btn.textContent.replace(" OFF", "");
+      });
+    });
+  </script>
 </body>
 </html>
